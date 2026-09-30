@@ -25,5 +25,11 @@
   "devDependencies": {
     "@playwright/test": "^1.58.0",
     "@types/node": "^25.0.10"
+  },
+  "allowScripts": {
+    "@tsparticles/engine@3.9.1": true,
+    "esbuild@0.25.12": true,
+    "esbuild@0.27.2": true,
+    "sharp@0.34.5": true
   }
 }

@@ -158,37 +158,8 @@ const fullOgImage = `${Astro.url.origin}${ogImage}`;
     <main id="main-content" tabindex="-1">
       <slot />
       <slot name="scripts" />
-      <script type="text/javascript">
-        var _paq = _paq || [];
-        _paq.push(["setReferrerUrl", "-"]);
-        _paq.push(["disableBrowserFeatureDetection"]);
-        _paq.push(["trackPageView"]);
-        _paq.push(["enableLinkTracking"]);
-        (function () {
-          _paq.push(["setTrackerUrl", "https://track.educatrack.com/track"]);
-          _paq.push(["setSiteId", 1292]);
-          var d = document,
-            g = d.createElement("script"),
-            s = d.getElementsByTagName("script")[0];
-          g.type = "text/javascript";
-          g.async = true;
-          g.defer = true;
-          g.src = "https://statictrack.educatrack.com/track.js";
-          s.parentNode.insertBefore(g, s);
-        })();
-      </script>
-      <noscript
-        ><p>
-          <img
-            src="https://track.educatrack.com/track?rec=1&idsite=1292&rec=1"
-            style="border:0;"
-            alt=""
-          />
-        </p></noscript
-      >
     </main>
 
     <Footer />
-
   </body>
 </html>
