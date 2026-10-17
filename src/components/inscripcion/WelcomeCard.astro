@@ -1,0 +1,122 @@
+---
+import { Phone, MessageCircle, Mail, Clock } from "@lucide/astro";
+import { Image } from "astro:assets";
+import Photo from "../../assets/imagenes/formularios/chica.png";
+interface Props {
+  variant?: "inscripcion" | "contacto";
+}
+const { variant = "inscripcion" } = Astro.props;
+const isContact = variant === "contacto";
+---
+
+<aside
+  aria-labelledby="bienvenida-inscripcion"
+  class="welcome-panel text-white"
+>
+  <div class="welcome-photo">
+    <Image src={Photo} alt="Estudiante de UNE en línea" class="photo" loading="eager" fetchpriority="high" />
+    <div class="photo-content">
+      <h1
+        class="text-[clamp(28px,2.6vw,48px)] leading-[1.2] font-bold tracking-[-0.5px] max-[720px]:max-w-[440px] max-[720px]:text-[28px]"
+        id="bienvenida-inscripcion"
+      >
+        {isContact ? <>Inicia tu futuro<br /><span class="text-[#ff6470]">profesional hoy</span></> : "¡Bienvenidos a nuestro portal de inscripciones!"}
+      </h1>
+      <span class="my-5 block h-1 w-12 rounded bg-[#77ceff]" aria-hidden="true"
+      ></span>
+      {isContact ? (
+        <div>
+          <p class="contact-benefit"><span aria-hidden="true"></span>Asesoría personalizada gratuita</p>
+          <section aria-labelledby="otros-medios-contacto" class="contact-methods">
+            <h2 id="otros-medios-contacto">Otras formas de contacto</h2>
+            <p>¿Necesitas hablar ahora mismo?</p>
+            <a href="tel:3380000801" class="contact-badge">
+              <span class="contact-icon"><Phone size={22} aria-hidden="true" /></span>
+              <span><strong>33 8000 0801</strong><small>Llamada directa</small></span>
+            </a>
+            <a
+              href="https://api.whatsapp.com/send?phone=5213380000801&text=Hola%2C%20me%20gustar%C3%ADa%20recibir%20informaci%C3%B3n%20sobre%20UNE"
+              target="_blank" rel="noopener noreferrer" class="contact-badge whatsapp"
+            >
+              <span class="contact-icon"><MessageCircle size={22} aria-hidden="true" /></span>
+              <span><strong>WhatsApp</strong><small>(33) 8000 0801</small></span>
+            </a>
+            <a href="mailto:admisiones@une-enlinea.com" class="contact-badge email">
+              <span class="contact-icon"><Mail size={22} aria-hidden="true" /></span>
+              <span><strong>Email</strong><small>admisiones@une-enlinea.com</small></span>
+            </a>
+            <p class="contact-hours"><Clock size={18} aria-hidden="true" /><span>Horarios: Lun-Vie 8:00-20:00 | Sáb 9:00-14:00</span></p>
+          </section>
+        </div>
+      ) : (
+      <p
+        class="text-[clamp(16px,1.15vw,21px)] leading-[1.75] font-normal text-white max-[720px]:max-w-[500px]"
+      >
+        A continuación, se te solicitarán algunos datos personales para completar
+        tu solicitud de inscripción a UNE en línea. Una vez que envíes la
+        información, nuestro equipo revisará tu solicitud y se pondrá en contacto
+        contigo para orientarte sobre la documentación y los pasos necesarios para
+        finalizar el proceso. ¡Gracias por tu confianza!
+      </p>
+      )}
+    </div>
+  </div>
+</aside>
+<style>
+  .welcome-photo { position: relative; isolation: isolate; min-width: 0; background: #101b30; }
+  .photo { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; object-fit: cover; object-position: center 35%; }
+  .photo-content {
+    height: 100%;
+    padding: clamp(28px, 3vw, 56px);
+    background: linear-gradient(180deg, rgb(0 12 35 / 80%), rgb(0 12 35 / 62%));
+  }
+  @media (max-width: 720px) {
+    .photo-content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+    }
+  }
+
+  .welcome-panel {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr);
+    min-width: 0;
+    min-height: 100svh;
+    align-self: stretch;
+    background: #f5f5f5;
+  }
+  .contact-benefit {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: clamp(16px, 1.15vw, 21px);
+    line-height: 1.6;
+  }
+  .contact-benefit > span { width: 8px; height: 8px; flex-shrink: 0; border-radius: 50%; background: #4ade80; }
+  .contact-methods { display: grid; gap: 12px; margin-top: 36px; }
+  .contact-methods h2 { font-size: clamp(20px, 1.5vw, 26px); font-weight: 700; }
+  .contact-methods > p { font-size: 14px; line-height: 1.7; color: #e2e8f0; }
+  .contact-badge {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px;
+    border: 1px solid rgb(255 255 255 / 30%);
+    border-radius: 12px;
+    background: rgb(255 255 255 / 10%);
+    color: white;
+    transition: background 180ms;
+  }
+  .contact-badge:hover { background: rgb(255 255 255 / 20%); }
+  .contact-badge:focus-visible { outline: 3px solid #77ceff; outline-offset: 3px; }
+  .contact-icon { display: grid; place-items: center; flex-shrink: 0; width: 42px; height: 42px; border-radius: 50%; background: #15803d; }
+  .email .contact-icon { background: #2563eb; }
+  .whatsapp { border-color: rgb(74 222 128 / 45%); background: rgb(21 128 61 / 30%); }
+  .contact-badge > span:last-child { min-width: 0; }
+  .contact-badge strong { display: block; font-size: 16px; }
+  .contact-badge small { display: block; margin-top: 3px; font-size: 14px; overflow-wrap: anywhere; }
+  .contact-hours { display: flex; align-items: flex-start; gap: 10px; margin-top: 8px; }
+  .contact-hours :global(svg) { flex-shrink: 0; margin-top: 3px; }
+</style>
