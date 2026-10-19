@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "start": "node dist/server/entry.mjs",
     "preview": "astro preview",
     "astro": "astro"
   },
@@ -19,12 +20,14 @@
     "@tsparticles/engine": "^3.9.1",
     "@tsparticles/slim": "^3.9.1",
     "astro": "^5.17.1",
+    "better-sqlite3": "^13.0.3",
     "lucide-astro": "^0.555.0",
     "splide": "0.0.1-security",
     "tailwindcss": "^4.1.17"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.0",
+    "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^25.0.10"
   },
   "allowScripts": {
