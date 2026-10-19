@@ -1,0 +1,592 @@
+---
+import { CAMPOS_INSCRIPCION } from "../../server/inscripcion.js";
+import WelcomeCard from "./WelcomeCard.astro";
+import {
+  LoaderCircle,
+  ArrowRight,
+  UserRound,
+  GraduationCap,
+  Phone,
+  Mail,
+  UsersRound,
+  ChevronDown,
+} from "@lucide/astro";
+interface Props {
+  variant?: "inscripcion" | "contacto";
+  origenFormulario?: string;
+}
+const { variant = "inscripcion", origenFormulario = variant } = Astro.props;
+// La aceptación del aviso se valida solo en la interfaz, sin pregunta de destino.
+const camposLocales = [
+  ["compromiso", null, "MULTIPLE_CHOICE", true, "Como alumno de CENTRO UNIVERSITARIO UNE A.C., me comprometo a respetar y cumplir con el reglamento institucional; Así mismo autorizo a CENTRO UNIVERSITARIO UNE A.C. al uso interno y con fines de inscribirme como alumno para el uso de mis datos personales; Entiendo que el llenado de esta solicitud no garantiza mi inscripción y que será válida hasta que realice el pago de la primer parcialidad que corresponde al ciclo escolar. https://une-enlinea.com/", ["Sí"]],
+];
+const camposFormulario = [...CAMPOS_INSCRIPCION, ...camposLocales];
+const orden = [
+  "nombres",
+  "programaAcademico",
+  "telefonoContacto",
+  "correo",
+  "edad",
+];
+const iconos = {
+  nombres: UserRound,
+  programaAcademico: GraduationCap,
+  telefonoContacto: Phone,
+  correo: Mail,
+  edad: UsersRound,
+};
+const campos = orden.map((nombre) =>
+  camposFormulario.find(([campo]) => campo === nombre)!,
+);
+const adicionales = camposFormulario.filter(([campo]) =>
+  ["mediosSeleccionados", "compromiso"].includes(campo),
+);
+---
+
+<section class="inscripcion-backdrop text-[#10163c]">
+  <div class="inscripcion-layout">
+    <WelcomeCard variant={variant} />
+    <form
+      id="formulario-inscripcion"
+      data-origen-formulario={origenFormulario}
+      class="inscripcion-form"
+    >
+      <div class="form-heading">
+        <span
+          class="mb-[18px] block h-1 w-[38px] rounded bg-[#0067ff]"
+          aria-hidden="true"
+        ></span>
+        <h2>Datos personales</h2>
+      </div>
+      <div class="personal-fields">
+        {campos.map(([campo, id, tipo, obligatorio, titulo, opciones = []]) => {
+          const Icono = iconos[campo as keyof typeof iconos];
+          return (
+            <div
+              class:list={[
+                "personal-field",
+                { "col-span-full": campo === "nombres" },
+              ]}
+              data-field={campo}
+              data-type={tipo}
+              data-question-id={id}
+            >
+              <label for={campo}>
+                {titulo} <span class="pl-[3px] text-[#0059ff]">*</span>
+              </label>
+              <div class="control relative flex items-center text-[#7589ba]">
+                <Icono size={21} aria-hidden="true" />
+                {campo === "programaAcademico" || campo === "edad" ? (
+                  <>
+                    <select
+                      id={campo}
+                      name={campo}
+                      required={obligatorio}
+                      aria-describedby={campo + "-error"}
+                    >
+                      <option value="" disabled selected>
+                        {campo === "edad"
+                          ? "Selecciona un rango de edad"
+                          : "Selecciona tu programa"}
+                      </option>
+                      {opciones.map((opcion) => (
+                        <option value={opcion}>{campo === "edad" ? `${opcion} años` : opcion}</option>
+                      ))}
+                    </select>
+                    <ChevronDown
+                      size={17}
+                      class="select-arrow"
+                      aria-hidden="true"
+                    />
+                  </>
+                ) : (
+                  <input
+                    id={campo}
+                    name={campo}
+                    aria-describedby={campo + "-error"}
+                    type={
+                      campo === "correo"
+                        ? "email"
+                        : campo === "telefonoContacto"
+                          ? "tel"
+                          : "text"
+                    }
+                    autocomplete={
+                      campo === "nombres"
+                        ? "name"
+                        : campo === "correo"
+                          ? "email"
+                          : campo === "telefonoContacto"
+                            ? "tel"
+                            : "off"
+                    }
+                    placeholder={
+                      campo === "telefonoContacto"
+                        ? "Teléfono o WhatsApp a 10 dígitos"
+                        : campo === "correo"
+                          ? "Tu correo electrónico"
+                          : "Escribe tu nombre completo"
+                    }
+                    inputmode={
+                      campo === "telefonoContacto" ? "numeric" : undefined
+                    }
+                    pattern={
+                      campo === "telefonoContacto" ? "[0-9]{10}" : undefined
+                    }
+                    title={
+                      campo === "telefonoContacto"
+                        ? "Escribe 10 dígitos, sin espacios ni lada internacional."
+                        : undefined
+                    }
+                    maxlength={campo === "telefonoContacto" ? 10 : 500}
+                    required={obligatorio}
+                  />
+                )}
+              </div>
+              <p
+                id={campo + "-error"}
+                data-field-error
+                class="mt-1.5 text-xs leading-relaxed text-red-600 empty:hidden"
+                aria-live="polite"
+              ></p>
+            </div>
+          );
+        })}
+      </div>
+      {adicionales.map(
+        ([
+          campo,
+          id,
+          tipo,
+          obligatorio,
+          titulo,
+          opciones = [],
+          permiteOtro = false,
+        ]) => (
+          <section
+            class="additional-fields"
+            data-field={campo}
+            data-type={tipo}
+            data-question-id={id}
+            aria-labelledby={campo + "-heading"}
+          >
+            {campo === "compromiso" ? (
+              <>
+                <div class="flex items-baseline gap-3 text-base leading-[1.7] text-[#52658a] [&_label]:cursor-pointer">
+                  <input
+                    id="aceptar-terminos"
+                    name="compromiso"
+                    type="checkbox"
+                    value="Sí"
+                    required={obligatorio}
+                    aria-labelledby="compromiso-heading"
+                  />
+                  <span id="compromiso-heading">
+                    <label for="aceptar-terminos">He leído y acepto los </label>
+                    <button
+                      type="button"
+                      class="inline min-h-auto cursor-pointer rounded-none bg-transparent p-0 text-inherit font-normal text-[#ff2938] underline hover:text-[#d71928]"
+                      id="abrir-terminos"
+                    >
+                      términos y condiciones.
+                    </button>
+                  </span>
+                </div>
+                <dialog
+                  class="m-auto max-h-[80svh] w-[min(560px,calc(100%_-_32px))] overflow-auto rounded-xl border-0 p-7 text-[#344b85] shadow-[0_20px_80px_#001a7133] backdrop:bg-[#071c4b80] [&_p]:mt-4 [&_p]:mb-6 [&_p]:text-sm [&_p]:leading-[1.8]"
+                  id="terminos-dialog"
+                  aria-labelledby="terminos-titulo"
+                >
+                  <h2 id="terminos-titulo">Compromiso y autorización</h2>
+                  <p>{titulo}</p>
+                  <button
+                    type="button"
+                    id="cerrar-terminos"
+                    class="inline-flex min-h-14 cursor-pointer items-center justify-center gap-3 rounded-[7px] bg-[#ff2938] px-7 py-3 text-base font-bold text-white transition-colors duration-200 hover:bg-[#e51e2d] disabled:cursor-wait disabled:opacity-60"
+                  >
+                    Cerrar
+                  </button>
+                </dialog>
+              </>
+            ) : (
+              <>
+                <h2 id={campo + "-heading"}>
+                  ¿Cómo nos conociste?
+                </h2>
+                <fieldset class="m-0 min-w-0 border-0 p-0">
+                  <legend class="mb-4 text-sm leading-[1.55] font-normal whitespace-pre-line text-[#526079]">
+                    {titulo} <span class="pl-[3px] text-[#0059ff]">*</span>
+                  </legend>
+                  <div
+                    class:list={[
+                      "choices",
+                      { "media-choices": campo === "mediosSeleccionados" },
+                    ]}
+                  >
+                    {opciones.map((opcion, index) => (
+                      <label
+                        class="choice inline-flex min-h-8 cursor-pointer items-center gap-2 text-[13px] font-medium"
+                        for={campo + "-" + index}
+                      >
+                        <input
+                          id={campo + "-" + index}
+                          name={campo}
+                          type={tipo === "CHECKBOX" ? "checkbox" : "radio"}
+                          value={opcion}
+                          required={tipo === "MULTIPLE_CHOICE" && obligatorio}
+                        />
+                        <span>{opcion}</span>
+                      </label>
+                    ))}
+                    {permiteOtro && (
+                      <div class="flex min-w-0 gap-2">
+                        <label class="choice inline-flex cursor-pointer items-center gap-2" for="medios-otro">
+                          <input id="medios-otro" name={campo} type="checkbox" value="__otro__" data-other-choice />
+                          <span>Otro</span>
+                        </label>
+                        <input type="text" data-other-text aria-label="Otro medio por el que nos conociste" placeholder="Especifica" maxlength="500" disabled />
+                      </div>
+                    )}
+                  </div>
+                </fieldset>
+              </>
+            )}
+          </section>
+        ),
+      )}
+      <div class="mt-6 flex justify-end max-[1000px]:mt-[18px]">
+        <button
+          type="submit"
+          class="inline-flex min-h-14 cursor-pointer items-center justify-center gap-3 rounded-[7px] bg-[#ff2938] px-7 py-3 text-base font-bold text-white transition-colors duration-200 hover:bg-[#e51e2d] disabled:cursor-wait disabled:opacity-60 w-1/2 max-[420px]:w-full"
+        >
+          <LoaderCircle
+            size={19}
+            class="hidden animate-spin"
+            data-loader
+            aria-hidden="true"
+          />
+          <span data-label>Enviar formulario</span>
+          <ArrowRight size={19} aria-hidden="true" />
+        </button>
+      </div>
+      <p
+        class="mt-[18px] text-[13px] text-[#344b85] empty:hidden"
+        id="estado-inscripcion"
+        role="status"
+        aria-live="polite"
+        tabindex="-1"
+      ></p>
+    </form>
+  </div>
+</section>
+
+<style>
+  .inscripcion-backdrop {
+    width: 100%;
+    background: white;
+  }
+  .inscripcion-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 32%) minmax(0, 1fr);
+    width: 100%;
+    min-height: 100svh;
+  }
+  .inscripcion-form {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(32px, 4vw, 80px) clamp(28px, 4.5vw, 96px);
+  }
+  .form-heading h2 {
+    margin-bottom: clamp(24px, 2.5vw, 48px);
+    font-size: clamp(28px, 2.4vw, 44px);
+    line-height: 1.2;
+    font-weight: 700;
+  }
+  .personal-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(20px, 2vw, 36px) clamp(20px, 2vw, 40px);
+  }
+  .personal-field label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: clamp(15px, 1.1vw, 20px);
+    font-weight: 500;
+  }
+  .additional-fields {
+    margin-top: clamp(24px, 2.5vw, 44px);
+    padding-top: clamp(20px, 1.7vw, 32px);
+    border-top: 1px solid #dce5f4;
+  }
+  .additional-fields h2 {
+    margin-bottom: 10px;
+    font-size: clamp(21px, 1.6vw, 28px);
+    line-height: 1.35;
+    font-weight: 700;
+  }
+  @media (max-width: 900px) {
+    .inscripcion-layout { grid-template-columns: minmax(0, 36%) minmax(0, 1fr); }
+    .personal-fields { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 720px) {
+    .inscripcion-layout { grid-template-columns: minmax(0, 1fr); }
+    .inscripcion-form { padding: 32px 20px 40px; }
+  }
+  .control > :global(svg:first-child) {
+    position: absolute;
+    left: 15px;
+    pointer-events: none;
+  }
+  .control input,
+  select {
+    width: 100%;
+    min-width: 0;
+    height: clamp(54px, 4vw, 72px);
+    border: 1px solid #d2ddf1;
+    border-radius: 6px;
+    background: #fcfdff;
+    padding: 0 14px 0 48px;
+    font: inherit;
+    font-size: clamp(16px, 1.1vw, 20px);
+    color: #344b85;
+  }
+  select {
+    appearance: none;
+    padding-right: 32px;
+  }
+  .control input[aria-invalid="true"],
+  .control select[aria-invalid="true"] {
+    border-color: #dc2626;
+    background-color: #fff8f8;
+  }
+  .control :global(.select-arrow) {
+    position: absolute;
+    right: 13px;
+    pointer-events: none;
+  }
+  input:focus-visible,
+  select:focus-visible,
+  button:focus-visible {
+    outline: 3px solid #0069ef50;
+    outline-offset: 2px;
+  }
+  .choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .media-choices .choice {
+    border: 1px solid #d8e2f4;
+    border-radius: 6px;
+    padding: 12px 14px;
+    font-size: clamp(14px, 1vw, 18px);
+    color: #344b85;
+  }
+  .media-choices .choice:has(input:checked) {
+    background: #edf4ff;
+    border-color: #4489ff;
+  }
+  input[type="checkbox"],
+  input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    accent-color: #0069ff;
+    flex-shrink: 0;
+    margin: 0;
+  }
+  input[type="radio"] {
+    width: 19px;
+    height: 19px;
+  }
+  .choices:not(.media-choices) {
+    gap: 26px;
+  }
+  [data-other-text] {
+    width: clamp(100px, 10vw, 180px);
+    min-width: 0;
+    border: 1px solid #d2ddf1;
+    border-radius: 6px;
+    padding: 7px;
+    font-size: 16px;
+  }
+  [data-other-text]:disabled {
+    background: #f8faff;
+  }
+</style>
+
+<script>
+  import {
+    validarInscripcion,
+  } from "../../server/inscripcion.js";
+  const form = document.querySelector<HTMLFormElement>(
+    "#formulario-inscripcion",
+  )!;
+  const submit = form.querySelector<HTMLButtonElement>(
+    'button[type="submit"]',
+  )!;
+  const status = document.querySelector<HTMLParagraphElement>(
+    "#estado-inscripcion",
+  )!;
+
+  const termsDialog =
+    form.querySelector<HTMLDialogElement>("#terminos-dialog")!;
+  form
+    .querySelector("#abrir-terminos")!
+    .addEventListener("click", () => termsDialog.showModal());
+  form
+    .querySelector("#cerrar-terminos")!
+    .addEventListener("click", () => termsDialog.close());
+
+  const mensajes: Record<string, string> = {
+    nombres: "Escribe tu nombre.",
+    programaAcademico: "Selecciona tu programa académico.",
+    edad: "Selecciona un rango de edad.",
+    telefonoContacto:
+      "Escribe un teléfono o WhatsApp de 10 dígitos, sin espacios ni lada internacional.",
+    correo: "Escribe un correo válido, por ejemplo: nombre@dominio.com.",
+  };
+
+  function validarCampo(control: HTMLInputElement | HTMLSelectElement) {
+    const grupo = control.closest<HTMLElement>("[data-field]");
+    const mensaje = grupo?.querySelector<HTMLElement>("[data-field-error]");
+    if (!grupo || !mensaje) return;
+    control.setCustomValidity("");
+    const { errors } = validarInscripcion(recolectar());
+    const invalido =
+      !control.validity.valid || Boolean(errors[grupo.dataset.field!]);
+    const texto = invalido
+      ? mensajes[grupo.dataset.field!] || "Revisa este campo."
+      : "";
+    control.setCustomValidity(texto);
+    control.setAttribute("aria-invalid", String(invalido));
+    mensaje.textContent = texto;
+  }
+
+  for (const grupo of form.querySelectorAll<HTMLElement>("[data-field]")) {
+    if (!grupo.querySelector("[data-field-error]")) continue;
+    const control = grupo.querySelector<HTMLInputElement | HTMLSelectElement>(
+      "input, select",
+    )!;
+    control.addEventListener("blur", () => validarCampo(control));
+    control.addEventListener("change", () => validarCampo(control));
+    control.addEventListener("input", () => {
+      if (control.hasAttribute("aria-invalid")) validarCampo(control);
+    });
+    control.addEventListener("invalid", () => validarCampo(control));
+  }
+
+  function validarMedios() {
+    const grupo = form.querySelector('[data-field="mediosSeleccionados"]')!;
+    const primero = grupo.querySelector<HTMLInputElement>('input[type="checkbox"]')!;
+    const otro = grupo.querySelector<HTMLInputElement>("[data-other-choice]")!;
+    const texto = grupo.querySelector<HTMLInputElement>("[data-other-text]")!;
+    texto.disabled = !otro.checked;
+    texto.required = otro.checked;
+    texto.setCustomValidity(otro.checked && !texto.value.trim() ? "Especifica el otro medio." : "");
+    primero.setCustomValidity(
+      grupo.querySelector('input:checked') ? "" : "Selecciona al menos un medio.",
+    );
+  }
+  form.addEventListener("change", validarMedios);
+  form.addEventListener("input", validarMedios);
+  validarMedios();
+
+  function recolectar() {
+    const data: Record<string, string | string[]> = {
+      origenFormulario: form.dataset.origenFormulario || "inscripcion",
+      rutaProcedencia: window.location.pathname,
+    };
+    for (const group of form.querySelectorAll<HTMLElement>("[data-field]")) {
+      const campo = group.dataset.field!;
+      if (campo === "compromiso") continue; // Se valida en el navegador, no se envia.
+      if (
+        campo === "programaAcademico" ||
+        campo === "edad" ||
+        group.dataset.type === "LIST"
+      ) {
+        data[campo] = group.querySelector<HTMLSelectElement>("select")!.value;
+      } else if (group.dataset.type === "TEXT") {
+        data[campo] = group
+          .querySelector<HTMLInputElement>("input")!
+          .value.trim();
+      } else {
+        const values = Array.from(
+          group.querySelectorAll<HTMLInputElement>("input:checked"),
+          (input) =>
+            input.hasAttribute("data-other-choice")
+              ? group
+                  .querySelector<HTMLInputElement>("[data-other-text]")!
+                  .value.trim()
+              : input.value,
+        );
+        data[campo] =
+          group.dataset.type === "CHECKBOX" ? values : values[0] || "";
+      }
+    }
+    return data;
+  }
+  function datosValidos() {
+    validarMedios();
+    for (const control of form.querySelectorAll<
+      HTMLInputElement | HTMLSelectElement
+    >("input[aria-describedby], select[aria-describedby]")) {
+      validarCampo(control);
+    }
+    if (!form.reportValidity()) return null;
+    const { data, errors } = validarInscripcion(recolectar());
+    if (Object.keys(errors).length) {
+      status.textContent =
+        "Revisa estos campos: " + Object.keys(errors).join(", ");
+      status.focus();
+      return null;
+    }
+    return data;
+  }
+  function mostrarCarga(
+    button: HTMLButtonElement,
+    loading: boolean,
+    label: string,
+  ) {
+    button.disabled = loading;
+    button.setAttribute("aria-busy", String(loading));
+    button.querySelector("[data-loader]")!.classList.toggle("hidden", !loading);
+    button.querySelector("[data-label]")!.textContent = label;
+  }
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (submit.disabled) return;
+    const data = datosValidos();
+    if (!data) return;
+    mostrarCarga(submit, true, "Enviando…");
+    status.textContent = "Estamos guardando tu solicitud. Espera un momento.";
+    try {
+      const response = await fetch("/api/forms/inscripcion", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(data),
+        signal: AbortSignal.timeout(35000),
+      });
+      const result = await response.json();
+      if (response.ok && result.success === true) {
+        status.textContent =
+          "Tu solicitud se registró correctamente. Redirigiendo…";
+        window.location.assign("/contacto/gracias");
+        return;
+      }
+      status.textContent =
+        result.message ||
+        "No pudimos confirmar el envío. Verifica si se registró antes de repetir el envío.";
+    } catch {
+      status.textContent =
+        "No pudimos confirmar el registro. Verifica si se guardó antes de repetir el envío.";
+    }
+    mostrarCarga(submit, false, "Enviar formulario");
+    status.focus();
+  });
+</script>
