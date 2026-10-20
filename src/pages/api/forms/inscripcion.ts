@@ -189,15 +189,14 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    if (!response) {
-  return json(
-    {
-      success: false,
-      message: "No se recibió respuesta del servicio externo.",
-    },
-    502,
-  );
-}
+    return json(
+      {
+        success: false,
+        message: "No se pudo confirmar la respuesta del servicio externo.",
+      },
+      502,
+    );
+  }
 
   // 8. Google confirmó el registro.
   if (
