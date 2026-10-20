@@ -144,7 +144,7 @@ SOURCE_ASSETS="$BUILD_DIR/_astro"
 
 if [ -d "$SOURCE_ASSETS" ]; then
     # Copiar solo archivos nuevos (no sobrescribir existentes)
-    sudo cp -rn "$SOURCE_ASSETS"/* "$HISTORY_DIR/_astro/" 2>/dev/null || true
+    cp -rn "$SOURCE_ASSETS"/* "$HISTORY_DIR/_astro/"
     sudo chown -R www-data:www-data "$HISTORY_DIR"
     echo -e "${GREEN}Historial de assets actualizado.${NC}"
 else
@@ -154,7 +154,7 @@ fi
 # Mantener solo los últimos 3 builds (limpieza de espacio)
 echo -e "${BLUE}Limpiando builds antiguos...${NC}"
 cd releases
-ls -t | grep "^build_" | tail -n +4 | xargs -r sudo rm -rf
+ls -t | grep "^build_" | tail -n +4 | xargs -r rm -rf
 cd ..
 
 # Recargar configuración de Nginx
