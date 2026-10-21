@@ -19,6 +19,7 @@ export function crearCola(db, config, { now = Date.now, random = Math.random } =
     return { id: row.id, payload: row.payload, attempt, token };
   }
 
+  // Solo para pruebas: crea y reserva en un paso, sin esperar al worker.
   const crearYReservar = db.transaction((data) => {
     const id = randomUUID();
     const payload = JSON.stringify(data);

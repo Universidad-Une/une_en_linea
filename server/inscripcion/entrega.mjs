@@ -1,4 +1,4 @@
-import { validarInscripcion } from "../../server/inscripcion.js";
+import { validarInscripcion } from "./validacion.mjs";
 
 export function configuracionEnv(env = process.env) {
   const number = (name, fallback) => {

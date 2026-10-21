@@ -6,16 +6,13 @@
     "dev": "node --env-file-if-exists=.env ./node_modules/astro/astro.js dev",
     "build": "astro build",
     "start": "npm run api",
-    "api": "node --env-file-if-exists=.env --experimental-strip-types api/server.mjs",
-    "db:init": "node --env-file-if-exists=.env scripts/init-database.mjs",
-    "db:query": "node --env-file-if-exists=.env scripts/query-database.mjs",
-    "test:database": "node --experimental-strip-types --test src/lib/server/database/database.test.mjs",
-    "worker": "node --env-file-if-exists=.env --experimental-strip-types scripts/inscripcion-worker.mjs",
-    "test:worker": "node --test src/lib/server/inscripcion-worker.test.mjs",
-    "test:rate-limit": "node --test src/lib/server/inscripcion-rate-limit.test.mjs",
-    "test:inscripcion-integration": "node --test src/lib/server/inscripcion-integration.test.mjs",
+    "api": "node --env-file-if-exists=.env server/api.mjs",
+    "db:init": "node --env-file-if-exists=.env server/scripts/init-db.mjs",
+    "db:query": "node --env-file-if-exists=.env server/scripts/query-db.mjs",
+    "worker": "node --env-file-if-exists=.env server/worker.mjs",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "test": "node --test server/test/*.test.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.0",

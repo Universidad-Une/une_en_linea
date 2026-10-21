@@ -1,9 +1,9 @@
 import { createServer } from "node:http";
-import { db } from "../src/lib/server/database/sqlite.ts";
-import { crearCola } from "../src/lib/server/database/queue.mjs";
-import { configuracionEnv } from "../src/lib/server/inscripcion-delivery.mjs";
-import { configuracionRateLimit, crearProteccionRateLimit } from "../src/lib/server/inscripcion-rate-limit.mjs";
-import { validarInscripcion } from "../src/server/inscripcion.js";
+import { db } from "./db/sqlite.mjs";
+import { crearCola } from "./db/cola.mjs";
+import { configuracionEnv } from "./inscripcion/entrega.mjs";
+import { configuracionRateLimit, crearProteccionRateLimit } from "./inscripcion/rate-limit.mjs";
+import { validarInscripcion } from "./inscripcion/validacion.mjs";
 
 const config = configuracionEnv();
 const cola = crearCola(db, config);

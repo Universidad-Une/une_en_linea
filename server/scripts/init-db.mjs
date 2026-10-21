@@ -1,7 +1,7 @@
 import { mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import Database from "better-sqlite3";
-import { inicializarBase } from "../src/lib/server/database/schema.mjs";
+import { inicializarBase } from "../db/schema.mjs";
 
 if (!process.env.SQLITE_DB_PATH) {
   throw new Error("Configura SQLITE_DB_PATH en .env antes de inicializar SQLite.");

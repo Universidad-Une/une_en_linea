@@ -9,7 +9,7 @@ import { once } from "node:events";
 import { spawn } from "node:child_process";
 import { setTimeout as sleep } from "node:timers/promises";
 import Database from "better-sqlite3";
-import { inicializarBase } from "./database/schema.mjs";
+import { inicializarBase } from "../db/schema.mjs";
 
 // Requiere npm run build para verificar dist estático. API y worker son procesos reales,
 // pero Google se reemplaza por un servidor HTTP local y SQLite es temporal.
@@ -75,7 +75,7 @@ test("API confirma antes de contactar Google y el worker envía y recupera sin d
     child.stderr.on("data", chunk => { logs += chunk; });
     return { child, logs: () => logs };
   }
-  const api = launch(["--experimental-strip-types", resolve("api/server.mjs")]);
+  const api = launch([resolve("server/api.mjs")]);
   const base = `http://127.0.0.1:${port}`;
   let ready = false;
   for (let i = 0; i < 100; i++) {
@@ -106,11 +106,11 @@ test("API confirma antes de contactar Google y el worker envía y recupera sin d
   assert.equal(pending.estado, "PENDING");
   assert.equal(pending.intentos, 0);
   assert.equal(db.prepare("SELECT count(*) AS n FROM intentos_envio").get().n, 0);
-  const worker = launch(["--experimental-strip-types", resolve("scripts/inscripcion-worker.mjs"), "--once"]);
+  const worker = launch([resolve("server/worker.mjs"), "--once"]);
   const [code] = await once(worker.child, "exit");
   assert.equal(code, 0, worker.logs());
   assert.equal(db.prepare("SELECT estado FROM inscripciones WHERE id=?").get(body.requestId).estado, "UNKNOWN");
-  const retry = launch(["--experimental-strip-types", resolve("scripts/inscripcion-worker.mjs"), "--once"]);
+  const retry = launch([resolve("server/worker.mjs"), "--once"]);
   const [retryCode] = await once(retry.child, "exit");
   assert.equal(retryCode, 0, retry.logs());
   const row = db.prepare("SELECT * FROM inscripciones WHERE id=?").get(body.requestId);
@@ -156,7 +156,7 @@ test("API confirma antes de contactar Google y el worker envía y recupera sin d
   await once(portFinder, "listening");
   const proxyPort = portFinder.address().port;
   await new Promise(resolve => portFinder.close(resolve));
-  const proxied = launch(["--experimental-strip-types", resolve("api/server.mjs")], {
+  const proxied = launch([resolve("server/api.mjs")], {
     API_PORT: String(proxyPort), INSCRIPCION_TRUST_PROXY: "true", INSCRIPCION_RATE_LIMIT_PER_IP: "1",
   });
   const proxyBase = `http://127.0.0.1:${proxyPort}`;

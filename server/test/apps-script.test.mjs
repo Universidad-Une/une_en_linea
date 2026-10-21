@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 
 const source = readFileSync(
-  new URL("./recibir-inscripcion.js", import.meta.url),
+  new URL("../apps-script/recibir-inscripcion.js", import.meta.url),
   "utf8",
 );
 const requestId = "b4df9fde-90da-4f82-8fb6-8bc90020ff81";
@@ -171,7 +171,7 @@ test("guarda seis respuestas con IDs nuevos sin privacidad", () => {
   assert.equal(answers[541670431], undefined);
 });
 test("contrato y validación de Astro coinciden con el receptor", async () => {
-  const { CAMPOS_INSCRIPCION, validarInscripcion } = await import("../src/server/inscripcion.js");
+  const { CAMPOS_INSCRIPCION, validarInscripcion } = await import("../inscripcion/validacion.mjs");
   const f = fixture();
   assert.equal(CAMPOS_INSCRIPCION.length, 8);
   for (const [campo, , tipo, , , opciones] of CAMPOS_INSCRIPCION) {

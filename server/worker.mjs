@@ -1,7 +1,7 @@
 import { setTimeout as sleep } from "node:timers/promises";
-import { db } from "../src/lib/server/database/sqlite.ts";
-import { crearCola } from "../src/lib/server/database/queue.mjs";
-import { configuracionEnv, procesarTrabajo } from "../src/lib/server/inscripcion-delivery.mjs";
+import { db } from "./db/sqlite.mjs";
+import { crearCola } from "./db/cola.mjs";
+import { configuracionEnv, procesarTrabajo } from "./inscripcion/entrega.mjs";
 
 const once = process.argv.includes("--once");
 let stopping = false;

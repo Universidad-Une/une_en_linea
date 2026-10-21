@@ -6,9 +6,9 @@ import { join } from "node:path";
 import { createServer } from "node:http";
 import { once } from "node:events";
 import Database from "better-sqlite3";
-import { inicializarBase } from "./database/schema.mjs";
-import { crearCola } from "./database/queue.mjs";
-import { configuracionEnv, enviarInscripcion, procesarTrabajo } from "./inscripcion-delivery.mjs";
+import { inicializarBase } from "../db/schema.mjs";
+import { crearCola } from "../db/cola.mjs";
+import { configuracionEnv, enviarInscripcion, procesarTrabajo } from "../inscripcion/entrega.mjs";
 
 const data = {
   nombres: "Prueba ficticia", programaAcademico: "Lic. en administracion", edad: "18-24",
@@ -142,7 +142,7 @@ test("dos conexiones no reservan el mismo trabajo de la API ni el mismo reintent
 test("la migración conserva los registros anteriores y no reenvía UNKNOWN antiguos", (t) => {
   const db = new Database(":memory:");
   t.after(() => db.close());
-  db.exec(readFileSync(new URL("./database/schema.sql", import.meta.url), "utf8"));
+  db.exec(readFileSync(new URL("../db/migraciones/001-inicial.sql", import.meta.url), "utf8"));
   db.pragma("user_version = 1");
   db.prepare("INSERT INTO inscripciones(id,payload,estado,intentos) VALUES ('anterior',?,'UNKNOWN',1)").run(JSON.stringify(data));
   db.prepare("INSERT INTO intentos_envio(inscripcion_id,numero_intento,payload,estado) VALUES ('anterior',1,?,'UNKNOWN')").run(JSON.stringify(data));

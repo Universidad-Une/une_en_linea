@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { configuracionRateLimit, crearProteccionRateLimit, identificarIp } from "./inscripcion-rate-limit.mjs";
+import { configuracionRateLimit, crearProteccionRateLimit, identificarIp } from "../inscripcion/rate-limit.mjs";
 
 const defaults = configuracionRateLimit({});
 const request = (headers = {}, path = "/api/forms/inscripcion", method = "POST") =>

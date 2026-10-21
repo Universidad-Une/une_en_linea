@@ -6,7 +6,7 @@ export function inicializarBase(db) {
     const version = db.pragma("user_version", { simple: true });
     if (version === 2) return;
     if (version === 1) {
-      db.exec(readFileSync(new URL("./migration-002.sql", import.meta.url), "utf8"));
+      db.exec(readFileSync(new URL("./migraciones/002-reintentos.sql", import.meta.url), "utf8"));
       db.pragma("user_version = 2");
       return;
     }
@@ -17,8 +17,8 @@ export function inicializarBase(db) {
     if (tabla) {
       throw new Error("La base ya tiene tablas sin versión. Revisa su esquema antes de migrarla.");
     }
-    db.exec(readFileSync(new URL("./schema.sql", import.meta.url), "utf8"));
-    db.exec(readFileSync(new URL("./migration-002.sql", import.meta.url), "utf8"));
+    db.exec(readFileSync(new URL("./migraciones/001-inicial.sql", import.meta.url), "utf8"));
+    db.exec(readFileSync(new URL("./migraciones/002-reintentos.sql", import.meta.url), "utf8"));
     db.pragma("user_version = 2");
   }).immediate();
 }
