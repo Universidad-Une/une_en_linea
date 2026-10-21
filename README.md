@@ -65,6 +65,7 @@ La prueba de integración usa `dist/`: ejecutar `npm run build` antes de `npm te
 
 ## Documentación
 
+- [Backend (`server/`)](server/README.md): qué hay en cada carpeta y reglas al modificarlo.
 - [Inscripción](docs/inscripcion.md): cómo funciona el flujo, estados y qué hacer cuando falla.
 - [Despliegue](docs/despliegue.md): VPS, PM2, nginx, actualizar y revertir.
 - [Receptor de Apps Script](server/apps-script/README.md): configurarlo en Google.
