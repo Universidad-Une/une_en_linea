@@ -24,7 +24,6 @@ export default defineConfig({
         "@assets": path.resolve("./src/assets"),
         "@components": path.resolve("./src/components"),
         "@layouts": path.resolve("./src/layouts"),
-        "@utils": path.resolve("./src/utils"),
         "@pages": path.resolve("./src/pages"),
         "@helpers": path.resolve("./src/helpers"),
         "@layout": path.resolve("./src/components/layout"),

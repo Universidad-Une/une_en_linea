@@ -30,7 +30,6 @@
     "tailwindcss": "^4.1.17"
   },
   "devDependencies": {
-    "@playwright/test": "^1.58.0",
     "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^25.0.10"
   },
