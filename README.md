@@ -1,121 +1,77 @@
 # 🎓 Universidad UNE En Línea
 
-Este repositorio contiene el código fuente del sitio web de **Universidad UNE En Línea**, una aplicación web moderna y de alto rendimiento construida con [Astro](https://astro.build/).
+Sitio web de **Universidad UNE En Línea**: un sitio estático en [Astro 5](https://astro.build/)
+con Tailwind CSS v4, más un pequeño backend en Node que recibe las solicitudes de
+inscripción y las envía a Google Forms.
 
-## 🚀 Tecnologías Principales
-
-El proyecto utiliza un stack tecnológico moderno enfocado en el rendimiento y la experiencia de usuario:
-
-- **[Astro 5](https://astro.build/)**: Framework web para sitios orientados a contenido, optimizado para velocidad.
-- **[Tailwind CSS v4](https://tailwindcss.com/)**: Framework de utilidades para un diseño rápido y responsivo.
-- **[Splide.js](https://splidejs.com/)**: Carruseles y sliders ligeros y accesibles.
-- **[Lucide Icons](https://lucide.dev/)**: Iconos vectoriales limpios y consistentes.
-- **[tsParticles](https://particles.js.org/)**: Animaciones de partículas ligeras para fondos interactivos.
-
-## 📂 Estructura del Proyecto
-
-El proyecto sigue una estructura modular y organizada:
+## Estructura
 
 ```text
 /
-├── public/             # Archivos estáticos (imágenes, favicon, robots.txt)
-├── src/
-│   ├── components/     # Componentes reutilizables de la UI
-│   │   ├── layout/     # Componentes estructurales (Header, Footer)
-│   │   └── sections/   # Secciones de página (Hero, Features, etc.)
-│   ├── pages/          # Rutas de la aplicación (basado en archivos)
-│   │   ├── acerca/     # Páginas informativas
-│   │   ├── oferta-academica/ # Catálogo de programas educativos
-│   │   └── index.astro # Página de inicio
-│   └── assets/         # Recursos como imágenes, fuentes e iconos
-└── package.json
+├── src/            # Sitio Astro → se compila a dist/ (estático)
+│   ├── components/ #   layout/, sections/, inscripcion/ (formulario)
+│   ├── pages/      #   rutas del sitio
+│   ├── layouts/  assets/  helpers/  styles/
+├── public/         # archivos que se copian tal cual
+├── server/         # Backend Node (corre en el VPS con PM2)
+│   ├── api.mjs     #   POST /api/forms/inscripcion → guarda en SQLite
+│   ├── worker.mjs  #   envía a Google y reintenta
+│   ├── inscripcion/  db/  scripts/  test/
+│   └── apps-script/#   receptor que corre en Google (se copia a mano)
+├── deploy/         # PM2 y fragmento de nginx
+├── docs/           # documentación
+├── deploy.sh  rollback.sh
+└── .env.example    # todas las variables, comentadas
 ```
 
-### 📍 Alias de Importación
+Alias de importación (en `tsconfig.json`): `@/` → `src/`, `@components`, `@layout`,
+`@layouts`, `@pages`, `@assets`, `@logos`, `@icons`, `@helpers`.
 
-Para facilitar el desarrollo y mantener el código limpio, se han configurado los siguientes alias:
+## Desarrollo local
 
-- `@/`: `src/`
-- `@components`: `src/components`
-- `@layout`: `src/components/layout`
-- `@sections`: `src/components/sections`
-- `@assets`: `src/assets`
-- `@images`: `src/assets/images`
-- `@logos`: `src/assets/Logos`
+```bash
+npm install
+cp .env.example .env      # completar URL y secreto de Apps Script
+npm run db:init           # crea data/inscripciones.sqlite
+```
 
-## 🛠️ Comandos Disponibles
+Para el sitio solo: `npm run dev` (http://localhost:4321).
 
-Todos los comandos se ejecutan desde la raíz del proyecto. Se recomienda usar `npm` o `pnpm`.
+Para probar el formulario de inscripción completo, en tres terminales:
 
-| Comando             | Acción                                                                                         |
-| :------------------ | :--------------------------------------------------------------------------------------------- |
-| `npm run dev`       | Inicia el servidor de desarrollo local en `localhost:4321`. Incluye recarga en caliente (HMR). |
-| `npm run build`     | Compila el sitio para producción en el directorio `./dist/`.                                   |
-| `npm run api` | Inicia la API independiente en 127.0.0.1:4322. |
-| `npm start` | Alias de la API; no sirve el sitio estático. |
-| `npm run db:init` | Crea SQLite local o migra su esquema versionado con respaldo previo para versión 1. |
-| `npm run db:query` | Consulta las últimas 20 inscripciones en modo de solo lectura; acepta SQL después de `--`. |
-| `npm run worker` | Procesa el primer envío y los reintentos en segundo plano; requiere otra terminal. |
-| `npm run worker -- --once` | Procesa como máximo un trabajo disponible y sale. |
-| `npm run test:database` | Prueba persistencia e historial con una base temporal. |
-| `npm run test:worker` | Prueba reintentos, reservas y recuperación sin Google real. |
-| `npm run test:rate-limit` | Prueba límites de peticiones e identificación de IP. |
-| `npm run test:inscripcion-integration` | Prueba API independiente, worker y dist estático con receptor simulado. |
-| `npm run preview`   | Previsualiza la versión compilada localmente antes de desplegar.                               |
-| `npm run astro ...` | Ejecuta comandos CLI como `astro add`, `astro check`.                                          |
+```bash
+npm run dev
+npm run api               # 127.0.0.1:4322; Astro le reenvía /api/forms/inscripcion
+npm run worker            # envía a la URL real de .env: usar un formulario de prueba
+```
 
-## 🏁 Comenzando
+Sin worker las solicitudes se guardan pero no llegan a Google.
+`npm run worker -- --once` procesa como máximo un trabajo y sale.
+`npm run preview` sirve el build sin el proxy, así que ahí el formulario no funciona.
 
-1.  **Clonar el repositorio:**
+## Comandos
 
-    ```bash
-    git clone <url-del-repo>
-    cd une-enlinea
-    ```
+| Comando | Acción |
+| :-- | :-- |
+| `npm run dev` | Sitio en desarrollo con recarga en caliente |
+| `npm run build` | Compila el sitio a `dist/` |
+| `npm run api` / `npm start` | API de inscripción |
+| `npm run worker` | Envíos y reintentos a Google |
+| `npm run db:init` | Crea o migra la base SQLite |
+| `npm run db:query -- "SELECT ..."` | Consulta de solo lectura; sin SQL muestra las últimas 20 |
+| `npm test` | Todas las pruebas del backend (sin Google real ni `.env`) |
 
-2.  **Instalar dependencias:**
+La prueba de integración usa `dist/`: ejecutar `npm run build` antes de `npm test`.
 
-    ```bash
-    npm install
-    # o
-    pnpm install
-    ```
+## Documentación
 
-3. **Configurar el entorno y crear SQLite:** copia `.env.example` a `.env`,
-   configura la URL y el secreto de Apps Script y conserva la ruta local de SQLite.
-   Para una base nueva ejecuta:
+- [Inscripción](docs/inscripcion.md): cómo funciona el flujo, estados y qué hacer cuando falla.
+- [Despliegue](docs/despliegue.md): VPS, PM2, nginx, actualizar y revertir.
+- [Receptor de Apps Script](server/apps-script/README.md): configurarlo en Google.
+- [Reporte de redirecciones](docs/reportes/redirects.md).
 
-    ```bash
-    npm run db:init
-    ```
+## Convenciones
 
-4.  **Iniciar servidor de desarrollo:**
-    ```bash
-    npm run dev
-    ```
-
-5. **Iniciar la API:** en otra terminal ejecuta `npm run api`. El proxy de desarrollo conecta el formulario con el puerto `API_PORT` (4322 por defecto).
-
-6. **Activar envíos y reintentos:** en otra terminal ejecuta `npm run worker`.
-   La pregunta técnica y la implementación de Apps Script deben estar configuradas
-   según [el receptor](apps-script/README.md).
-   La API confirma al guardar en SQLite; sin worker las solicitudes quedan pendientes.
-
-## Notas de Desarrollo
-
-Astro genera un único `dist/` estático. PM2 administra la API y el worker con
-`ecosystem.config.cjs`; Nginx sirve `dist` y reenvía la ruta de inscripción.
-La configuración vigente está en [Despliegue PM2](deployment/pm2.md).
-
-La configuración de SQLite local y el historial de intentos están documentados
-en [SQLite local](documentación/sqlite-local.md).
-Los reintentos y sus comandos se describen en [Worker local](documentación/worker-inscripcion.md).
-La protección de la API se configura en [Límite de peticiones](documentación/limite-peticiones-inscripcion.md).
-
-- **Imágenes**: Usa el componente `<Image />` de Astro siempre que sea posible para la optimización automática.
-- **Estilos**: Preferir clases de Tailwind CSS sobre CSS personalizado.
-- **Componentes**: Mantener los componentes pequeños y enfocados en una sola responsabilidad.
-
----
-
-Desarrollado con ❤️ para Universidad UNE.
+- **Imágenes:** usar `<Image />` de Astro siempre que sea posible.
+- **Estilos:** preferir clases de Tailwind sobre CSS propio.
+- **Componentes:** pequeños y con una sola responsabilidad.

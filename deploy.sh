@@ -160,7 +160,7 @@ cd ..
 # Recargar configuración de Nginx
 echo -e "${YELLOW}Recargando Nginx...${NC}"
 sudo systemctl reload nginx
-echo "Sitio estático actualizado. Si cambió el backend, reinicia une-api y une-worker con PM2 desde el usuario que los administra."
+echo "Sitio estático actualizado. Si cambió el backend: npm run db:init (si cambió el esquema) y pm2 startOrReload deploy/ecosystem.config.cjs --update-env. Ver docs/despliegue.md."
 
 # Resumen final
 echo -e "${GREEN}========================================${NC}"
