@@ -171,7 +171,7 @@ test("guarda seis respuestas con IDs nuevos sin privacidad", () => {
   assert.equal(answers[541670431], undefined);
 });
 test("contrato y validación de Astro coinciden con el receptor", async () => {
-  const { CAMPOS_INSCRIPCION, validarInscripcion } = await import("../inscripcion/validacion.mjs");
+  const { CAMPOS_INSCRIPCION, validarInscripcion } = await import("../validacion.mjs");
   const f = fixture();
   assert.equal(CAMPOS_INSCRIPCION.length, 8);
   for (const [campo, , tipo, , , opciones] of CAMPOS_INSCRIPCION) {

@@ -1,12 +1,11 @@
 import { createServer } from "node:http";
-import { db } from "./db/sqlite.mjs";
-import { crearCola } from "./db/cola.mjs";
-import { configuracionEnv } from "./inscripcion/entrega.mjs";
-import { configuracionRateLimit, crearProteccionRateLimit } from "./inscripcion/rate-limit.mjs";
-import { validarInscripcion } from "./inscripcion/validacion.mjs";
+import { abrirBase } from "./db.mjs";
+import { crearCola } from "./cola.mjs";
+import { configuracionRateLimit, crearProteccionRateLimit } from "./rate-limit.mjs";
+import { validarInscripcion } from "./validacion.mjs";
 
-const config = configuracionEnv();
-const cola = crearCola(db, config);
+const db = abrirBase();
+const cola = crearCola(db);
 const protect = crearProteccionRateLimit(configuracionRateLimit());
 const port = Number(process.env.API_PORT || 4322);
 const host = process.env.API_HOST || "127.0.0.1";
@@ -50,11 +49,10 @@ const server = createServer(async (req, res) => {
     catch { return send(req, res, 400, { success: false, message: "Ruta inválida." }); }
     if (pathname !== "/api/forms/inscripcion") return send(req, res, 404, { success: false, message: "Ruta no encontrada." });
     if (req.method !== "POST") return send(req, res, 405, { success: false, message: "Se requiere POST." }, { Allow: "POST" });
-    const request = new Request(url, { method: "POST", headers: req.headers });
-    const rejection = protect(request, req.socket.remoteAddress);
+    const rejection = protect(req.headers, req.socket.remoteAddress);
     if (rejection) {
-      return send(req, res, rejection.status, await rejection.json(),
-        rejection.headers.has("Retry-After") ? { "Retry-After": rejection.headers.get("Retry-After") } : {});
+      return send(req, res, rejection.status, { success: false, message: rejection.message },
+        rejection.retryAfter ? { "Retry-After": String(rejection.retryAfter) } : {});
     }
     const type = (req.headers["content-type"] || "").split(";")[0].trim().toLowerCase();
     if (type !== "application/json") return send(req, res, 415, { success: false, message: "Se requiere JSON." });

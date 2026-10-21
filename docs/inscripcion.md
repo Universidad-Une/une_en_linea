@@ -25,7 +25,7 @@ server/worker.mjs ── toma un trabajo de la cola (lease de 90 s)
   navegador genera otro UUID: no se deduplica por nombre, correo ni teléfono.
 - El formulario está en `src/components/inscripcion/Form.astro` y se usa en
   `/formulario-inscripcion` y `/contacto/solicitarinformacion`. Tras el 202 redirige a
-  `/contacto/gracias`. Importa `server/inscripcion/validacion.mjs` para validar en el
+  `/contacto/gracias`. Importa `server/validacion.mjs` para validar en el
   navegador con las mismas reglas que la API; por eso ese archivo no debe usar módulos de
   Node. Rellena solo `origenFormulario` y `rutaProcedencia`
   (`window.location.pathname`), que son de seguimiento, no de autorización.
@@ -64,17 +64,14 @@ tardío sobrescriba uno nuevo.
 
 ## Base de datos
 
-`server/db/migraciones/` define dos tablas:
+`server/schema.sql` define dos tablas:
 
 - `inscripciones`: una fila por solicitud (`id` = UUID, `payload` JSON, `estado`,
   `intentos`, `next_attempt_at` en ms Unix, `needs_review`, `google_response_id`).
-- `intentos_envio`: una fila por intento, con su copia del payload, estado, HTTP y error.
+- `intentos_envio`: una fila por intento, con estado, HTTP, error y fechas.
 
 El payload contiene datos personales (nombre, correo, teléfono). No se guardan secretos.
 Los logs solo incluyen UUID, número de intento y estado.
-
-Las filas anteriores a la versión 2 tienen `retry_enabled=0` y el worker no las toca:
-no se puede saber si llegaron a Google con deduplicación.
 
 ## Cuando algo falla
 

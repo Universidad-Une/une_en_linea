@@ -16,7 +16,7 @@ inscripción y las envía a Google Forms.
 ├── server/         # Backend Node (corre en el VPS con PM2)
 │   ├── api.mjs     #   POST /api/forms/inscripcion → guarda en SQLite
 │   ├── worker.mjs  #   envía a Google y reintenta
-│   ├── inscripcion/  db/  scripts/  test/
+│   ├── validacion, cola, entrega, db…  test/
 │   └── apps-script/#   receptor que corre en Google (se copia a mano)
 ├── deploy/         # PM2 y fragmento de nginx
 ├── docs/           # documentación
@@ -57,15 +57,13 @@ Sin worker las solicitudes se guardan pero no llegan a Google.
 | `npm run build` | Compila el sitio a `dist/` |
 | `npm run api` / `npm start` | API de inscripción |
 | `npm run worker` | Envíos y reintentos a Google |
-| `npm run db:init` | Crea o migra la base SQLite |
+| `npm run db:init` | Crea la base SQLite |
 | `npm run db:query -- "SELECT ..."` | Consulta de solo lectura; sin SQL muestra las últimas 20 |
 | `npm test` | Todas las pruebas del backend (sin Google real ni `.env`) |
 
-La prueba de integración usa `dist/`: ejecutar `npm run build` antes de `npm test`.
-
 ## Documentación
 
-- [Backend (`server/`)](server/README.md): qué hay en cada carpeta y reglas al modificarlo.
+- [Backend (`server/`)](server/README.md): archivos y reglas al modificarlo.
 - [Inscripción](docs/inscripcion.md): cómo funciona el flujo, estados y qué hacer cuando falla.
 - [Despliegue](docs/despliegue.md): VPS, PM2, nginx, actualizar y revertir.
 - [Receptor de Apps Script](server/apps-script/README.md): configurarlo en Google.

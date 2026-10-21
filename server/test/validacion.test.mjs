@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { CAMPOS_INSCRIPCION, validarInscripcion } from "../inscripcion/validacion.mjs";
+import { CAMPOS_INSCRIPCION, validarInscripcion } from "../validacion.mjs";
 const valid = () => ({
   nombres: "Ana Pérez", programaAcademico: "Lic. en administracion",
   edad: "18-24", telefonoContacto: "3311111111",

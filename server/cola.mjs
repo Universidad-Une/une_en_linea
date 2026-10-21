@@ -1,9 +1,7 @@
 import { randomUUID } from "node:crypto";
 
-export function crearCola(db, config, { now = Date.now, random = Math.random } = {}) {
-  if (db.pragma("user_version", { simple: true }) !== 2) {
-    throw new Error("SQLite requiere versión 2. Ejecuta npm run db:init antes de iniciar API y worker.");
-  }
+// config (reintentos y lease) solo se usa en las funciones del worker; la API puede omitirlo.
+export function crearCola(db, config = {}, { now = Date.now, random = Math.random } = {}) {
   const delay = (attempt) => Math.min(config.maxDelayMs,
     Math.round(config.baseDelayMs * 2 ** Math.min(attempt - 1, 30) * (0.8 + random() * 0.4)));
 
@@ -14,25 +12,16 @@ export function crearCola(db, config, { now = Date.now, random = Math.random } =
       lease_token=?, lease_until=?, next_attempt_at=NULL, updated_at=CURRENT_TIMESTAMP
       WHERE id=?`).run(attempt, token, time + config.leaseMs, row.id);
     db.prepare(`INSERT INTO intentos_envio
-      (inscripcion_id, numero_intento, payload, estado) VALUES (?, ?, ?, 'PROCESSING')`)
-      .run(row.id, attempt, row.payload);
+      (inscripcion_id, numero_intento, estado) VALUES (?, ?, 'PROCESSING')`)
+      .run(row.id, attempt);
     return { id: row.id, payload: row.payload, attempt, token };
   }
-
-  // Solo para pruebas: crea y reserva en un paso, sin esperar al worker.
-  const crearYReservar = db.transaction((data) => {
-    const id = randomUUID();
-    const payload = JSON.stringify(data);
-    db.prepare(`INSERT INTO inscripciones (id, payload, retry_enabled) VALUES (?, ?, 1)`)
-      .run(id, payload);
-    return reservar({ id, payload, intentos: 0 }, now());
-  });
 
   // La API solo confirma recepción duradera. El worker inicia el primer envío.
   const encolar = db.transaction((data) => {
     const id = randomUUID();
     db.prepare(`INSERT INTO inscripciones
-      (id, payload, retry_enabled, next_attempt_at) VALUES (?, ?, 1, ?)`)
+      (id, payload, next_attempt_at) VALUES (?, ?, ?)`)
       .run(id, JSON.stringify(data), now());
     return { id };
   });
@@ -41,8 +30,8 @@ export function crearCola(db, config, { now = Date.now, random = Math.random } =
   // el mismo intento. El token impide que un proceso antiguo cierre otro intento.
   const tomarSiguiente = db.transaction(() => {
     const time = now();
-    const expired = db.prepare(`SELECT * FROM inscripciones WHERE retry_enabled=1
-      AND estado='PROCESSING' AND lease_until<=?`).all(time);
+    const expired = db.prepare(`SELECT * FROM inscripciones
+      WHERE estado='PROCESSING' AND lease_until<=?`).all(time);
     for (const row of expired) {
       db.prepare(`UPDATE intentos_envio SET estado='UNKNOWN', error='PROCESS_INTERRUPTED',
         finished_at=CURRENT_TIMESTAMP WHERE inscripcion_id=? AND numero_intento=? AND estado='PROCESSING'`)
@@ -55,9 +44,9 @@ export function crearCola(db, config, { now = Date.now, random = Math.random } =
     }
     // También respeta un límite reducido después de reiniciar el worker.
     db.prepare(`UPDATE inscripciones SET needs_review=1, next_attempt_at=NULL,
-      updated_at=CURRENT_TIMESTAMP WHERE retry_enabled=1 AND needs_review=0
+      updated_at=CURRENT_TIMESTAMP WHERE needs_review=0
       AND estado IN ('RETRY','UNKNOWN','PENDING') AND intentos>=?`).run(config.maxAttempts);
-    const row = db.prepare(`SELECT * FROM inscripciones WHERE retry_enabled=1 AND needs_review=0
+    const row = db.prepare(`SELECT * FROM inscripciones WHERE needs_review=0
       AND estado IN ('PENDING','RETRY','UNKNOWN') AND next_attempt_at<=? AND intentos<?
       ORDER BY next_attempt_at, created_at LIMIT 1`).get(time, config.maxAttempts);
     return row ? reservar(row, time) : null;
@@ -85,7 +74,6 @@ export function crearCola(db, config, { now = Date.now, random = Math.random } =
 
   return {
     encolar: (data) => encolar.immediate(data),
-    crearYReservar: (data) => crearYReservar.immediate(data),
     tomarSiguiente: () => tomarSiguiente.immediate(),
     finalizar: (job, result) => finalizar.immediate(job, result),
   };

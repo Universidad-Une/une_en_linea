@@ -19,14 +19,6 @@ export function configuracionRateLimit(env = process.env) {
   };
 }
 
-export function esPostInscripcion(request) {
-  if (request.method !== "POST") return false;
-  try {
-    // Astro decodifica la ruta antes de resolver el endpoint.
-    return decodeURI(new URL(request.url).pathname).replace(/\/+$/, "") === "/api/forms/inscripcion";
-  } catch { return false; }
-}
-
 function normalizarIp(value) {
   if (typeof value !== "string" || value.length > 64) return null;
   const ip = value.trim();
@@ -44,22 +36,18 @@ function normalizarIp(value) {
   return canonical;
 }
 
-export function identificarIp(request, clientAddress, trustProxy) {
+// headers: req.headers de node:http (claves en minúsculas).
+export function identificarIp(headers, socketAddress, trustProxy) {
   if (trustProxy) {
     // Solo activar con Node inaccesible desde Internet y un proxy que
     // sobrescriba X-Real-IP. Nunca usar un X-Forwarded-For arbitrario.
-    return normalizarIp(request.headers.get("x-real-ip"));
+    return normalizarIp(headers["x-real-ip"]);
   }
-  // El servidor independiente entrega req.socket.remoteAddress, no el XFF.
   // En modo directo todos los encabezados de IP del cliente se ignoran.
-  return normalizarIp(clientAddress);
+  return normalizarIp(socketAddress);
 }
 
-function json(status, message, retryAfter) {
-  const headers = { "Content-Type": "application/json", "Cache-Control": "no-store" };
-  if (retryAfter !== undefined) headers["Retry-After"] = String(retryAfter);
-  return new Response(JSON.stringify({ success: false, message }), { status, headers });
-}
+const rechazo = (status, message, retryAfter) => ({ status, message, retryAfter });
 
 export function crearProteccionRateLimit(config, now = Date.now) {
   const ips = new Map();
@@ -68,14 +56,15 @@ export function crearProteccionRateLimit(config, now = Date.now) {
   const prune = (times, time) => {
     while (times.length && times[0] <= time - config.windowMs) times.shift();
   };
-  const denied = (times, time) => json(429,
+  const denied = (times, time) => rechazo(429,
     "Has realizado demasiadas solicitudes. Espera un momento antes de volver a intentarlo.",
     Math.max(1, Math.ceil((times[0] + config.windowMs - time) / 1000)));
 
-  return (request, clientAddress) => {
-    if (!esPostInscripcion(request)) return null;
-    const ip = identificarIp(request, clientAddress, config.trustProxy);
-    if (!ip) return json(400, "No se pudo verificar el origen de la conexión.");
+  // Devuelve null si se admite, o { status, message, retryAfter? } si se rechaza.
+  // Se llama antes de leer el cuerpo: cuenta también JSON y datos inválidos.
+  return (headers, socketAddress) => {
+    const ip = identificarIp(headers, socketAddress, config.trustProxy);
+    if (!ip) return rechazo(400, "No se pudo verificar el origen de la conexión.");
     const time = now();
     if (time >= nextSweep) {
       for (const [key, times] of ips) {
@@ -92,11 +81,10 @@ export function crearProteccionRateLimit(config, now = Date.now) {
     prune(global, time);
     if (global.length >= config.global) return denied(global, time);
     if (!times) {
-      if (ips.size >= config.maxKeys) return json(429, "El servicio está ocupado. Inténtalo más tarde.", 10);
+      if (ips.size >= config.maxKeys) return rechazo(429, "El servicio está ocupado. Inténtalo más tarde.", 10);
       times = [];
       ips.set(ip, times);
     }
-    // Contar antes de validar/leer el cuerpo, también JSON y datos inválidos.
     // Los rechazos por IP no consumen el cupo global de otros usuarios.
     times.push(time);
     global.push(time);

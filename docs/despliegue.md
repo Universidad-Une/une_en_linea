@@ -15,9 +15,8 @@ En producción hay tres piezas:
    es un módulo nativo. Requiere Node 22.12 o superior.
 3. Crear `.env` en la raíz con las variables de [`.env.example`](../.env.example). En el VPS:
    `SQLITE_DB_PATH` absoluta y `INSCRIPCION_TRUST_PROXY=true`.
-4. `npm run db:init`. Acepta una base nueva o una versión 1 (crea un respaldo
-   `.before-v2-*.bak`). **Rechaza una base con tablas y sin versión:** si el VPS tiene una
-   base antigua, hay que revisar su esquema y migrarla aparte. Nunca reemplazarla por la local.
+4. `npm run db:init`. Crea la base; si ya existe con el esquema actual no hace nada, y
+   rechaza cualquier base con otras tablas. Nunca copiar la base local al VPS.
 5. Incluir `deploy/nginx-inscripcion.conf` dentro del bloque `server` del dominio y luego:
    ```sh
    sudo nginx -t && sudo systemctl reload nginx

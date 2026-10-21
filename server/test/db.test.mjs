@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import Database from "better-sqlite3";
-import { inicializarBase } from "../db/schema.mjs";
+import { inicializarBase } from "../db.mjs";
 
 test("el inicializador rechaza bases previas sin modificar sus tablas", () => {
   const existing = new Database(":memory:");

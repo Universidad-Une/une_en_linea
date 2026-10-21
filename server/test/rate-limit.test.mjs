@@ -1,25 +1,21 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { configuracionRateLimit, crearProteccionRateLimit, identificarIp } from "../inscripcion/rate-limit.mjs";
+import { configuracionRateLimit, crearProteccionRateLimit, identificarIp } from "../rate-limit.mjs";
 
 const defaults = configuracionRateLimit({});
-const request = (headers = {}, path = "/api/forms/inscripcion", method = "POST") =>
-  new Request("http://localhost" + path, { method, headers,
-    body: method === "POST" ? '{"datos":"no leer todavía"}' : undefined });
+// La API pasa req.headers de node:http: objeto con claves en minúsculas.
+const request = (headers = {}) => headers;
 
-test("permite cinco solicitudes, bloquea la sexta sin leer el cuerpo y libera al expirar", () => {
+test("permite cinco solicitudes, bloquea la sexta y libera al expirar", () => {
   let time = 1000;
   const check = crearProteccionRateLimit(defaults, () => time);
   for (let i = 0; i < 5; i++) assert.equal(check(request(), "192.0.2.1"), null);
-  const incoming = request();
-  const blocked = check(incoming, "192.0.2.1");
+  const blocked = check(request(), "192.0.2.1");
   assert.equal(blocked.status, 429);
-  assert.equal(blocked.headers.get("Retry-After"), "60");
-  assert.equal(blocked.headers.get("Cache-Control"), "no-store");
-  assert.equal(incoming.bodyUsed, false);
+  assert.equal(blocked.retryAfter, 60);
   assert.equal(check(request(), "192.0.2.2"), null);
   time += 59000;
-  assert.equal(check(request(), "192.0.2.1").headers.get("Retry-After"), "1");
+  assert.equal(check(request(), "192.0.2.1").retryAfter, 1);
   time += 1000;
   assert.equal(check(request(), "192.0.2.1"), null);
 });
@@ -43,17 +39,6 @@ test("el cupo global limita IP distintas y los rechazos por IP no lo consumen", 
   for (let i = 0; i < 10; i++) assert.equal(check(request(), "192.0.2.1").status, 429);
   assert.equal(check(request(), "192.0.2.2"), null);
   assert.equal(check(request(), "192.0.2.3").status, 429);
-});
-
-test("no limita páginas, otras APIs ni GET; incluye la barra final del endpoint", () => {
-  const check = crearProteccionRateLimit({ ...defaults, perIp: 1 });
-  assert.equal(check(request(), "192.0.2.1"), null);
-  assert.equal(check(request({}, "/api/forms/inscripcion/"), "192.0.2.1").status, 429);
-  assert.equal(check(request({}, "/api/forms/%69nscripcion"), "192.0.2.1").status, 429);
-  for (const [path, method] of [["/formulario-inscripcion", "GET"],
-    ["/api/forms/inscripcion", "GET"], ["/otro", "POST"]]) {
-    assert.equal(check(request({}, path, method), "192.0.2.1"), null);
-  }
 });
 
 test("en modo directo ignora XFF y X-Real-IP para impedir cambios de identidad", () => {

@@ -29,7 +29,7 @@ Actualizar el receptor y el backend de forma coordinada: un receptor antiguo sin
 
 Los IDs de pregunta son de Apps Script, no parámetros `entry.*`. La lista completa de
 opciones está en `CAMPOS_INSCRIPCION`, duplicada aquí y en
-`server/inscripcion/validacion.mjs` (que también usa `Form.astro` para validar en el
+`server/validacion.mjs` (que también usa `Form.astro` para validar en el
 navegador). **Cualquier cambio de preguntas u opciones se hace
 en los dos archivos.** `server/test/apps-script.test.mjs` comprueba que tengan los mismos
 campos y que el receptor acepte cada opción de selección única; no compara todo.

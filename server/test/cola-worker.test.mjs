@@ -1,14 +1,14 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createServer } from "node:http";
 import { once } from "node:events";
 import Database from "better-sqlite3";
-import { inicializarBase } from "../db/schema.mjs";
-import { crearCola } from "../db/cola.mjs";
-import { configuracionEnv, enviarInscripcion, procesarTrabajo } from "../inscripcion/entrega.mjs";
+import { inicializarBase } from "../db.mjs";
+import { crearCola } from "../cola.mjs";
+import { configuracionEnv, enviarInscripcion, procesarTrabajo } from "../entrega.mjs";
 
 const data = {
   nombres: "Prueba ficticia", programaAcademico: "Lic. en administracion", edad: "18-24",
@@ -31,6 +31,13 @@ function fixture(t, overrides = {}) {
     attempts: (id) => db.prepare("SELECT * FROM intentos_envio WHERE inscripcion_id=? ORDER BY numero_intento").all(id) };
 }
 const json = (body, status = 200) => new Response(JSON.stringify(body), { status });
+// Encola y reserva de inmediato; cada prueba usa una base con un solo trabajo.
+const encolarYReservar = (cola, datos) => {
+  const { id } = cola.encolar(datos);
+  const job = cola.tomarSiguiente();
+  assert.equal(job.id, id);
+  return job;
+};
 
 test("encolar persiste sin iniciar envíos y el worker reserva el primer intento", (t) => {
   const f = fixture(t);
@@ -43,13 +50,12 @@ test("encolar persiste sin iniciar envíos y el worker reserva el primer intento
   assert.equal(first.id, queued.id);
   assert.equal(first.attempt, 1);
   assert.equal(f.row(queued.id).estado, "PROCESSING");
-  assert.equal(f.attempts(queued.id)[0].payload, first.payload);
   assert.equal(f.cola.tomarSiguiente(), null);
 });
 
 test("el worker respeta la fecha de reintento, UUID, payload y confirma el segundo intento", async (t) => {
   const f = fixture(t);
-  const first = f.cola.crearYReservar(data);
+  const first = encolarYReservar(f.cola, data);
   let sent;
   const failure = await procesarTrabajo(f.cola, first, config, async (_, init) => {
     sent = JSON.parse(init.body);
@@ -69,14 +75,14 @@ test("el worker respeta la fecha de reintento, UUID, payload y confirma el segun
   assert.equal(f.row(first.id).google_response_id, "google-1");
   assert.equal(f.row(first.id).next_attempt_at, null);
   assert.deepEqual(f.attempts(first.id).map(a => a.estado), ["UNKNOWN", "SENT"]);
-  assert.ok(f.attempts(first.id).every(a => a.payload === first.payload && a.finished_at));
+  assert.ok(f.attempts(first.id).every(a => a.finished_at));
   f.tick(1000000);
   assert.equal(f.cola.tomarSiguiente(), null);
 });
 
 test("recupera un proceso caído, registra su fallo y rechaza resultados de su reserva antigua", (t) => {
   const f = fixture(t);
-  const first = f.cola.crearYReservar(data);
+  const first = encolarYReservar(f.cola, data);
   assert.equal(f.row(first.id).intentos, 1);
   assert.equal(f.attempts(first.id)[0].estado, "PROCESSING");
   assert.equal(f.cola.tomarSiguiente(), null);
@@ -93,7 +99,7 @@ test("recupera un proceso caído, registra su fallo y rechaza resultados de su r
 
 test("al agotar intentos conserva UNKNOWN y los datos para revisión sin seguir enviando", (t) => {
   const f = fixture(t, { maxAttempts: 2 });
-  const first = f.cola.crearYReservar(data);
+  const first = encolarYReservar(f.cola, data);
   f.cola.finalizar(first, { estado: "RETRY", error: "RECEIVER_BUSY" });
   f.tick(100);
   const second = f.cola.tomarSiguiente();
@@ -109,7 +115,7 @@ test("al agotar intentos conserva UNKNOWN y los datos para revisión sin seguir 
 
 test("un rechazo permanente no se reintenta", async (t) => {
   const f = fixture(t);
-  const job = f.cola.crearYReservar(data);
+  const job = encolarYReservar(f.cola, data);
   const result = await procesarTrabajo(f.cola, job, config,
     async () => json({ success: false, error: "FORM_SCHEMA_CHANGED" }));
   assert.equal(result.estado, "FAILED");
@@ -129,7 +135,7 @@ test("dos conexiones no reservan el mismo trabajo de la API ni el mismo reintent
   const options = { now: () => time, random: () => 0.5 };
   const api = crearCola(db1, config, options);
   const worker = crearCola(db2, config, options);
-  const first = api.crearYReservar(data);
+  const first = encolarYReservar(api, data);
   assert.equal(worker.tomarSiguiente(), null);
   api.finalizar(first, { estado: "UNKNOWN" });
   time = 100;
@@ -139,24 +145,9 @@ test("dos conexiones no reservan el mismo trabajo de la API ni el mismo reintent
   assert.equal(db1.prepare("SELECT count(*) AS n FROM intentos_envio WHERE estado='PROCESSING'").get().n, 1);
 });
 
-test("la migración conserva los registros anteriores y no reenvía UNKNOWN antiguos", (t) => {
-  const db = new Database(":memory:");
-  t.after(() => db.close());
-  db.exec(readFileSync(new URL("../db/migraciones/001-inicial.sql", import.meta.url), "utf8"));
-  db.pragma("user_version = 1");
-  db.prepare("INSERT INTO inscripciones(id,payload,estado,intentos) VALUES ('anterior',?,'UNKNOWN',1)").run(JSON.stringify(data));
-  db.prepare("INSERT INTO intentos_envio(inscripcion_id,numero_intento,payload,estado) VALUES ('anterior',1,?,'UNKNOWN')").run(JSON.stringify(data));
-  inicializarBase(db);
-  inicializarBase(db);
-  const cola = crearCola(db, config);
-  assert.equal(cola.tomarSiguiente(), null);
-  assert.equal(db.prepare("SELECT retry_enabled FROM inscripciones").get().retry_enabled, 0);
-  assert.deepEqual(JSON.parse(db.prepare("SELECT payload FROM intentos_envio").get().payload), data);
-});
-
 test("la transacción revierte historial y estado si falla la escritura del resultado", (t) => {
   const f = fixture(t);
-  const job = f.cola.crearYReservar(data);
+  const job = encolarYReservar(f.cola, data);
   f.db.exec("CREATE TRIGGER fallo BEFORE UPDATE OF estado ON inscripciones BEGIN SELECT RAISE(ABORT,'fallo'); END");
   assert.throws(() => f.cola.finalizar(job, { estado: "SENT" }), /fallo/);
   assert.equal(f.attempts(job.id)[0].estado, "PROCESSING");
@@ -199,7 +190,7 @@ test("un receptor HTTP que guarda y corta la conexión se concilia con el mismo 
   await once(server, "listening");
   t.after(() => { server.closeAllConnections(); server.close(); });
   const settings = { ...config, url: `http://127.0.0.1:${server.address().port}` };
-  const first = f.cola.crearYReservar(data);
+  const first = encolarYReservar(f.cola, data);
   assert.equal((await procesarTrabajo(f.cola, first, settings)).estado, "UNKNOWN");
   f.tick(100);
   assert.equal((await procesarTrabajo(f.cola, f.cola.tomarSiguiente(), settings)).estado, "SENT");

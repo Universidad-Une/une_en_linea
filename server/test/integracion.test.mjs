@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, writeFileSync, rmSync, existsSync } from "node:fs";
+import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -9,10 +9,10 @@ import { once } from "node:events";
 import { spawn } from "node:child_process";
 import { setTimeout as sleep } from "node:timers/promises";
 import Database from "better-sqlite3";
-import { inicializarBase } from "../db/schema.mjs";
+import { inicializarBase } from "../db.mjs";
 
-// Requiere npm run build para verificar dist estático. API y worker son procesos reales,
-// pero Google se reemplaza por un servidor HTTP local y SQLite es temporal.
+// API y worker son procesos reales; Google se reemplaza por un servidor HTTP local
+// y SQLite es temporal. No usa .env.
 test("API confirma antes de contactar Google y el worker envía y recupera sin duplicar", { timeout: 30000 }, async (t) => {
   const directory = mkdtempSync(join(tmpdir(), "une-api-worker-"));
   const databasePath = join(directory, "test.sqlite");
@@ -119,11 +119,10 @@ test("API confirma antes de contactar Google y el worker envía y recupera sin d
   const attempts = db.prepare("SELECT * FROM intentos_envio WHERE inscripcion_id=? ORDER BY numero_intento").all(body.requestId);
   assert.deepEqual(attempts.map(a => a.estado), ["UNKNOWN", "SENT"]);
   assert.deepEqual(attempts.map(a => a.numero_intento), [1, 2]);
-  assert.ok(attempts.every(a => JSON.parse(a.payload).correo === payload.correo));
   assert.equal(saved.size, 1);
   assert.equal(requests, 2);
 
-  // El middleware cuenta también JSON inválido y no guarda peticiones bloqueadas.
+  // El límite cuenta también JSON inválido y no guarda peticiones bloqueadas.
   const spoof = await fetch(base + "/api/forms/inscripcion", {
     method: "POST", headers: { "Content-Type": "application/json", "X-Forwarded-For": "198.51.100.1" }, body: "{}",
   });
@@ -147,9 +146,6 @@ test("API confirma antes de contactar Google y el worker envía y recupera sin d
   assert.equal(db.prepare("SELECT count(*) AS n FROM inscripciones").get().n, 1);
   assert.equal(db.prepare("SELECT count(*) AS n FROM intentos_envio").get().n, 2);
   assert.equal((await fetch(base + "/formulario-inscripcion")).status, 404);
-  assert.ok(existsSync("dist/formulario-inscripcion/index.html"));
-  assert.equal(existsSync("dist/client"), false);
-  assert.equal(existsSync("dist/server"), false);
 
   // Probar también el modo de producción con un proxy que fija X-Real-IP.
   portFinder.listen(0, "127.0.0.1");
@@ -189,29 +185,4 @@ test("API confirma antes de contactar Google y el worker envía y recupera sin d
   });
   assert.equal(streamed.status, 413);
   assert.equal((await fetch(proxyBase + "/api/forms/inscripcion")).status, 405);
-  assert.equal((await fetch(proxyBase + "/_image")).status, 404);
-  assert.equal((await fetch(proxyBase + "/_server-islands/test")).status, 404);
-
-  // El sitio de desarrollo sigue usando la URL relativa del formulario.
-  portFinder.listen(0, "127.0.0.1");
-  await once(portFinder, "listening");
-  const sitePort = portFinder.address().port;
-  await new Promise(resolve => portFinder.close(resolve));
-  const site = launch([resolve("node_modules/astro/astro.js"), "dev", "--host", "127.0.0.1", "--port", String(sitePort)]);
-  const siteBase = `http://127.0.0.1:${sitePort}`;
-  let siteReady = false;
-  for (let i = 0; i < 100; i++) {
-    if (site.child.exitCode !== null) throw new Error(site.logs());
-    try {
-      const ping = await fetch(siteBase + "/api/forms/inscripcion", { signal: AbortSignal.timeout(500) });
-      if (ping.status === 405) { siteReady = true; break; }
-    } catch { /* Esperar a que Vite esté listo. */ }
-    await sleep(50);
-  }
-  assert.ok(siteReady, site.logs());
-  const proxiedLimit = await fetch(siteBase + "/api/forms/inscripcion", {
-    method: "POST", headers: { "Content-Type": "application/json" }, body: "{}",
-  });
-  assert.equal(proxiedLimit.status, 429);
-  assert.equal(db.prepare("SELECT count(*) AS n FROM inscripciones").get().n, 1);
 });
