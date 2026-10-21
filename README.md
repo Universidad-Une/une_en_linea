@@ -51,6 +51,16 @@ Todos los comandos se ejecutan desde la raíz del proyecto. Se recomienda usar `
 | :------------------ | :--------------------------------------------------------------------------------------------- |
 | `npm run dev`       | Inicia el servidor de desarrollo local en `localhost:4321`. Incluye recarga en caliente (HMR). |
 | `npm run build`     | Compila el sitio para producción en el directorio `./dist/`.                                   |
+| `npm run api` | Inicia la API independiente en 127.0.0.1:4322. |
+| `npm start` | Alias de la API; no sirve el sitio estático. |
+| `npm run db:init` | Crea SQLite local o migra su esquema versionado con respaldo previo para versión 1. |
+| `npm run db:query` | Consulta las últimas 20 inscripciones en modo de solo lectura; acepta SQL después de `--`. |
+| `npm run worker` | Procesa el primer envío y los reintentos en segundo plano; requiere otra terminal. |
+| `npm run worker -- --once` | Procesa como máximo un trabajo disponible y sale. |
+| `npm run test:database` | Prueba persistencia e historial con una base temporal. |
+| `npm run test:worker` | Prueba reintentos, reservas y recuperación sin Google real. |
+| `npm run test:rate-limit` | Prueba límites de peticiones e identificación de IP. |
+| `npm run test:inscripcion-integration` | Prueba API independiente, worker y dist estático con receptor simulado. |
 | `npm run preview`   | Previsualiza la versión compilada localmente antes de desplegar.                               |
 | `npm run astro ...` | Ejecuta comandos CLI como `astro add`, `astro check`.                                          |
 
@@ -71,12 +81,36 @@ Todos los comandos se ejecutan desde la raíz del proyecto. Se recomienda usar `
     pnpm install
     ```
 
-3.  **Iniciar servidor de desarrollo:**
+3. **Configurar el entorno y crear SQLite:** copia `.env.example` a `.env`,
+   configura la URL y el secreto de Apps Script y conserva la ruta local de SQLite.
+   Para una base nueva ejecuta:
+
+    ```bash
+    npm run db:init
+    ```
+
+4.  **Iniciar servidor de desarrollo:**
     ```bash
     npm run dev
     ```
 
+5. **Iniciar la API:** en otra terminal ejecuta `npm run api`. El proxy de desarrollo conecta el formulario con el puerto `API_PORT` (4322 por defecto).
+
+6. **Activar envíos y reintentos:** en otra terminal ejecuta `npm run worker`.
+   La pregunta técnica y la implementación de Apps Script deben estar configuradas
+   según [el receptor](apps-script/README.md).
+   La API confirma al guardar en SQLite; sin worker las solicitudes quedan pendientes.
+
 ## Notas de Desarrollo
+
+Astro genera un único `dist/` estático. PM2 administra la API y el worker con
+`ecosystem.config.cjs`; Nginx sirve `dist` y reenvía la ruta de inscripción.
+La configuración vigente está en [Despliegue PM2](deployment/pm2.md).
+
+La configuración de SQLite local y el historial de intentos están documentados
+en [SQLite local](documentación/sqlite-local.md).
+Los reintentos y sus comandos se describen en [Worker local](documentación/worker-inscripcion.md).
+La protección de la API se configura en [Límite de peticiones](documentación/limite-peticiones-inscripcion.md).
 
 - **Imágenes**: Usa el componente `<Image />` de Astro siempre que sea posible para la optimización automática.
 - **Estilos**: Preferir clases de Tailwind CSS sobre CSS personalizado.

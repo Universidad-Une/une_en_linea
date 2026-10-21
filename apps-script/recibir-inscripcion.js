@@ -122,8 +122,47 @@ function validarDatosInscripcion_(datos) {
   return { valores, errores };
 }
 
+function buscarRespuestaPorSolicitud_(form, requestId, itemId) {
+  for (const respuesta of form.getResponses()) {
+    const item = respuesta.getItemResponses().find(
+      (r) => r.getItem().getId() === itemId,
+    );
+    if (item && item.getResponse() === requestId) return respuesta.getId();
+  }
+  return null;
+}
+
+// Ejecutar manualmente después de crear la pregunta técnica en Google Forms.
+function obtenerIdSolicitud() {
+  const formId = PropertiesService.getScriptProperties().getProperty("FORM_ID");
+  if (!formId) throw new Error("Falta configurar FORM_ID en las propiedades del script.");
+  const form = FormApp.openById(formId);
+  const coincidencias = [];
+  for (const item of form.getItems()) {
+    const titulo = item.getTitle();
+    const detalle = { titulo, id: item.getId(), tipo: String(item.getType()) };
+    console.log(JSON.stringify(detalle));
+    if (titulo.trim().replace(/\s+/g, " ").toLowerCase() === "id de solicitud") {
+      coincidencias.push(detalle);
+    }
+  }
+  if (coincidencias.length === 0) {
+    throw new Error('No se encontró "ID de solicitud". Crea y guarda esa pregunta en el formulario indicado por FORM_ID. Revisa arriba los títulos de ese formulario.');
+  }
+  if (coincidencias.length > 1) {
+    throw new Error('Hay varias preguntas "ID de solicitud". Conserva una sola para identificarla sin ambigüedad.');
+  }
+  if (coincidencias[0].tipo !== "TEXT") {
+    throw new Error('La pregunta "ID de solicitud" debe ser de tipo Respuesta corta (TEXT).');
+  }
+  console.log("REQUEST_ID_ITEM_ID=" + coincidencias[0].id);
+  return coincidencias[0].id;
+}
+
 function doPost(e) {
   const inicio = Date.now();
+  let lock;
+  let acquired = false;
   try {
     const propiedades = PropertiesService.getScriptProperties();
     const formId = propiedades.getProperty("FORM_ID");
@@ -148,6 +187,40 @@ function doPost(e) {
     ) {
       return respuestaJson_({ success: false, error: "UNAUTHORIZED" });
     }
+    if (
+      typeof body.requestId !== "string" ||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(body.requestId)
+    ) {
+      return respuestaJson_({ success: false, error: "INVALID_REQUEST_ID" });
+    }
+    const requestId = body.requestId.toLowerCase();
+    const itemIdValue = propiedades.getProperty("REQUEST_ID_ITEM_ID");
+    const itemId = Number(itemIdValue);
+    if (
+      !itemIdValue || !/^\d+$/.test(itemIdValue) || !Number.isSafeInteger(itemId) ||
+      CAMPOS_INSCRIPCION.some(([, id]) => id === itemId)
+    ) {
+      return respuestaJson_({ success: false, error: "REQUEST_ID_NOT_CONFIGURED" });
+    }
+    const form = FormApp.openById(formId);
+    const requestItem = form.getItemById(itemId);
+    if (!requestItem || String(requestItem.getType()) !== "TEXT") {
+      return respuestaJson_({
+        success: false, error: "FORM_SCHEMA_CHANGED",
+        schema: { field: "requestId", id: itemId, expected: "TEXT", actual: requestItem ? String(requestItem.getType()) : "MISSING" },
+      });
+    }
+
+    // El bloqueo de script abarca buscar y guardar, también entre UUID distintos.
+    lock = LockService.getScriptLock();
+    acquired = lock.tryLock(5000);
+    if (!acquired) {
+      return respuestaJson_({ success: false, error: "RECEIVER_BUSY" });
+    }
+    const previousId = buscarRespuestaPorSolicitud_(form, requestId, itemId);
+    if (previousId) {
+      return respuestaJson_({ success: true, requestId, responseId: previousId, deduplicated: true });
+    }
     if (!objeto_(body.data)) {
       return respuestaJson_({ success: false, error: "INVALID_DATA" });
     }
@@ -161,7 +234,6 @@ function doPost(e) {
     }
 
     // En una aplicación web se abre por ID: no depender de getActiveForm().
-    const form = FormApp.openById(formId);
     if (!form.isAcceptingResponses()) {
       return respuestaJson_({ success: false, error: "FORM_CLOSED" });
     }
@@ -225,6 +297,7 @@ function doPost(e) {
       });
     }
     const respuesta = form.createResponse();
+    respuesta.withItemResponse(requestItem.asTextItem().createResponse(requestId));
     respuestas.forEach((itemResponse) =>
       respuesta.withItemResponse(itemResponse),
     );
@@ -236,7 +309,7 @@ function doPost(e) {
         duration: Date.now() - inicio,
       }),
     );
-    return respuestaJson_({ success: true, responseId: enviada.getId() });
+    return respuestaJson_({ success: true, requestId, responseId: enviada.getId(), deduplicated: false });
   } catch (_) {
     // No registrar el payload, el secreto ni excepciones con datos personales.
     console.error(
@@ -247,5 +320,7 @@ function doPost(e) {
       }),
     );
     return respuestaJson_({ success: false, error: "FORM_SUBMISSION_FAILED" });
+  } finally {
+    if (acquired) lock.releaseLock();
   }
 }

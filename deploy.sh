@@ -84,7 +84,7 @@ START=$(date +%s)
 
 # Crear directorio temporal y copiar archivos necesarios
 mkdir -p "$TEMP_BUILD"
-rsync -a --exclude='node_modules' --exclude='dist' --exclude='releases' --exclude='.git' ./ "$TEMP_BUILD/"
+rsync -a --exclude='node_modules' --exclude='dist' --exclude='releases' --exclude='.git' --exclude='data' --exclude='.env*' --exclude='*.sqlite*' ./ "$TEMP_BUILD/"
 
 # Copiar node_modules al directorio temporal
 cp -r node_modules "$TEMP_BUILD/"
@@ -160,6 +160,7 @@ cd ..
 # Recargar configuración de Nginx
 echo -e "${YELLOW}Recargando Nginx...${NC}"
 sudo systemctl reload nginx
+echo "Sitio estático actualizado. Si cambió el backend, reinicia une-api y une-worker con PM2 desde el usuario que los administra."
 
 # Resumen final
 echo -e "${GREEN}========================================${NC}"

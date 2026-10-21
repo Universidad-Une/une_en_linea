@@ -560,8 +560,8 @@ const adicionales = camposFormulario.filter(([campo]) =>
     if (submit.disabled) return;
     const data = datosValidos();
     if (!data) return;
-    mostrarCarga(submit, true, "Enviando…");
-    status.textContent = "Estamos guardando tu solicitud. Espera un momento.";
+    mostrarCarga(submit, true, "Guardando…");
+    status.textContent = "Estamos registrando tu solicitud.";
     try {
       const response = await fetch("/api/forms/inscripcion", {
         method: "POST",
@@ -574,8 +574,9 @@ const adicionales = camposFormulario.filter(([campo]) =>
       });
       const result = await response.json();
       if (response.ok && result.success === true) {
-        status.textContent =
-          "Tu solicitud se registró correctamente. Redirigiendo…";
+        status.textContent = result.queued
+          ? "Tu solicitud fue recibida y su envío está en proceso. Redirigiendo…"
+          : "Tu solicitud se registró correctamente. Redirigiendo…";
         window.location.assign("/contacto/gracias");
         return;
       }

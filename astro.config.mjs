@@ -6,13 +6,17 @@ import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 
 import sitemap from "@astrojs/sitemap";
-import node from "@astrojs/node";
 
 // https://astro.build/config
 export default defineConfig({
   site: "https://une-enlinea.com",
-  adapter: node({ mode: "standalone" }),
+  output: "static",
   vite: {
+    server: {
+      proxy: {
+        "/api/forms/inscripcion": `http://127.0.0.1:${process.env.API_PORT || 4322}`,
+      },
+    },
     plugins: [tailwindcss()],
     resolve: {
       alias: {

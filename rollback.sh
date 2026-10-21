@@ -193,6 +193,7 @@ fi
 rm -f "${CURRENT_LINK}.backup"
 
 # Recargar Nginx
+# Este rollback cambia solo el sitio estático; no revierte API, worker ni SQLite.
 echo -e "${YELLOW}Recargando Nginx...${NC}"
 sudo systemctl reload nginx
 

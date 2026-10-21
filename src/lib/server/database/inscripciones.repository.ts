@@ -1,6 +1,6 @@
 
 import { randomUUID } from "node:crypto";
-import { db } from "./sqlite";
+import { db } from "./sqlite.ts";
 
 export type EstadoInscripcion =
   | "PENDING"
@@ -48,10 +48,10 @@ export function registrarIntento(
 ): void {
   const transaction = db.transaction(() => {
     const row = db.prepare(`
-      SELECT intentos
+      SELECT intentos, payload
       FROM inscripciones
       WHERE id = ?
-    `).get(id) as { intentos: number } | undefined;
+    `).get(id) as { intentos: number; payload: string } | undefined;
 
     if (!row) {
       throw new Error("Inscripción no encontrada");
@@ -68,16 +68,30 @@ export function registrarIntento(
 
     db.prepare(`
       INSERT INTO intentos_envio
-        (inscripcion_id, numero_intento, estado, http_status, error)
-      VALUES (?, ?, ?, ?, ?)
+        (inscripcion_id, numero_intento, payload, estado, http_status, error)
+      VALUES (?, ?, ?, ?, ?, ?)
     `).run(
       id,
       intento,
+      row.payload,
       estado,
       httpStatus ?? null,
       error ?? null
     );
   });
 
-  transaction();
+  transaction.immediate();
+}
+
+// El historial, contador y estado final se confirman juntos.
+export function registrarResultado(
+  id: string,
+  estado: "SENT" | "FAILED" | "UNKNOWN",
+  httpStatus?: number,
+  error?: string,
+): void {
+  db.transaction(() => {
+    registrarIntento(id, estado, httpStatus, error);
+    actualizarEstado(id, estado, error);
+  }).immediate();
 }

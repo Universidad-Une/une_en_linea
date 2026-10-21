@@ -1,5 +1,10 @@
 # build output
 /dist
+# SQLite local y sus archivos auxiliares
+/data/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
 # generated types
 .astro/
 #aux
