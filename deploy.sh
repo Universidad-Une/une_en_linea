@@ -62,17 +62,25 @@ if [ "$OLD_HASH" == "$NEW_HASH" ]; then
     fi
 fi
 
-# Instalar/actualizar dependencias
-echo -e "${BLUE}Verificando e instalando dependencias...${NC}"
-npm install
-
-if [ $? -ne 0 ]; then
-    echo -e "${RED}ERROR: Fallo al instalar dependencias.${NC}"
-    exit 1
-fi
-
-# Crear directorio de releases
+# Crear directorio de releases (también guarda los marcadores del último deploy exitoso)
 mkdir -p releases
+DEPS_MARK="releases/.deps_lock_sha"
+BACKEND_MARK="releases/.backend_commit"
+
+# Instalar dependencias exactas del lockfile, solo si cambió desde la última instalación
+LOCK_SHA=$(sha256sum package-lock.json | cut -d' ' -f1)
+if [ ! -d node_modules ] || [ "$LOCK_SHA" != "$(cat "$DEPS_MARK" 2>/dev/null)" ]; then
+    echo -e "${BLUE}Instalando dependencias (npm ci)...${NC}"
+    npm ci
+
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}ERROR: Fallo al instalar dependencias.${NC}"
+        exit 1
+    fi
+    echo "$LOCK_SHA" > "$DEPS_MARK"
+else
+    echo -e "${BLUE}Dependencias sin cambios.${NC}"
+fi
 
 # Generar nombres únicos para este build
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
@@ -160,7 +168,63 @@ cd ..
 # Recargar configuración de Nginx
 echo -e "${YELLOW}Recargando Nginx...${NC}"
 sudo systemctl reload nginx
-echo "Sitio estático actualizado. Si cambió el backend: npm run db:init (si cambió el esquema) y pm2 startOrReload deploy/ecosystem.config.cjs --update-env. Ver docs/despliegue.md."
+
+# Backend (API y worker con PM2): solo si cambió su código, su config o sus dependencias
+# desde el último deploy de backend exitoso. Debe ejecutarse con el usuario que administra PM2.
+BACKEND_LAST=$(cat "$BACKEND_MARK" 2>/dev/null)
+if [ -z "$BACKEND_LAST" ] || ! git cat-file -e "${BACKEND_LAST}^{commit}" 2>/dev/null; then
+    BACKEND_CHANGED="sin despliegue previo registrado"
+else
+    BACKEND_CHANGED=$(git diff --name-only "$BACKEND_LAST" HEAD -- server deploy package.json package-lock.json)
+fi
+
+if [ -n "$BACKEND_CHANGED" ]; then
+    echo -e "${YELLOW}Desplegando backend...${NC}"
+    if ! command -v pm2 >/dev/null; then
+        echo -e "${RED}ERROR: pm2 no está instalado o no está en el PATH de este usuario.${NC}"
+        exit 1
+    fi
+
+    # Idempotente: crea la base si falta y aborta si no es compatible.
+    npm run db:init
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}ERROR: db:init falló. API y worker siguen con la versión anterior.${NC}"
+        exit 1
+    fi
+
+    # delete + start (no reload) para que PM2 tome siempre las rutas actuales del ecosystem.
+    pm2 delete une-api une-worker >/dev/null 2>&1
+    pm2 start deploy/ecosystem.config.cjs && pm2 save
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}ERROR: No se pudieron iniciar API y worker con PM2.${NC}"
+        exit 1
+    fi
+else
+    echo -e "${BLUE}Backend sin cambios.${NC}"
+fi
+
+# Verificar que la API responde: un JSON vacío debe dar 400 (o 429 si hay límite activo).
+API_PORT=$(grep -E '^API_PORT=' .env 2>/dev/null | cut -d= -f2 | tr -d '[:space:]')
+API_URL="http://127.0.0.1:${API_PORT:-4322}/api/forms/inscripcion"
+echo -e "${BLUE}Verificando API en ${API_URL}...${NC}"
+API_STATUS=000
+for _ in $(seq 1 10); do
+    API_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 3 -X POST \
+        -H 'Content-Type: application/json' -H 'X-Real-IP: 127.0.0.1' --data '{}' "$API_URL")
+    [ "$API_STATUS" = "400" ] || [ "$API_STATUS" = "429" ] && break
+    sleep 1
+done
+if [ "$API_STATUS" != "400" ] && [ "$API_STATUS" != "429" ]; then
+    echo -e "${RED}ERROR: La API no responde como se espera (HTTP ${API_STATUS}). Revisa: pm2 status, pm2 logs une-api${NC}"
+    exit 1
+fi
+echo -e "${GREEN}API respondiendo (HTTP ${API_STATUS}).${NC}"
+if ! pm2 describe une-worker 2>/dev/null | grep -q "online"; then
+    echo -e "${RED}ERROR: une-worker no está en línea. Revisa: pm2 logs une-worker${NC}"
+    exit 1
+fi
+echo -e "${GREEN}Worker en línea.${NC}"
+git rev-parse HEAD > "$BACKEND_MARK"
 
 # Resumen final
 echo -e "${GREEN}========================================${NC}"

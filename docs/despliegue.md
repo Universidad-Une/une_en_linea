@@ -52,20 +52,20 @@ pm2 logs une-worker
 
 ## Actualizar
 
-- **Solo sitio:** `./deploy.sh` compila, publica una nueva release de `dist/` y recarga nginx.
-  No toca PM2 ni SQLite.
-- **Backend:** actualizar `server/` y, si cambió el esquema, detener ambos procesos y
-  ejecutar `npm run db:init`. Luego:
-  ```sh
-  pm2 startOrReload deploy/ecosystem.config.cjs --update-env
-  ```
-- **Si cambian las rutas de los scripts** (como al pasar de `api/` a `server/`),
-  `restart` no basta:
-  ```sh
-  pm2 delete une-api une-worker
-  pm2 start deploy/ecosystem.config.cjs
-  pm2 save
-  ```
+`./deploy.sh`, ejecutado **con el mismo usuario que administra PM2**, hace todo:
+
+1. `git pull`.
+2. `npm ci`, solo si `package-lock.json` cambió desde la última instalación.
+3. Compila el sitio, publica una nueva release de `dist/` y recarga nginx.
+4. Si cambió `server/`, `deploy/` o las dependencias desde el último deploy de backend
+   exitoso (o nunca se registró uno): `npm run db:init`, `pm2 delete` y `pm2 start` de
+   `une-api` y `une-worker`, y `pm2 save`.
+5. Verifica que la API responda 400 a un JSON vacío y que `une-worker` esté en línea.
+   Si no, termina con error.
+
+Los marcadores del último deploy exitoso están en `releases/.deps_lock_sha` y
+`releases/.backend_commit`. Borrar el segundo fuerza a redesplegar el backend en el
+siguiente `./deploy.sh`. Si `db:init` falla, API y worker siguen con la versión anterior.
 
 `./rollback.sh` solo revierte el sitio estático. API, worker y esquema SQLite no se
 revierten con él. No sobrescribir la base al desplegar ni al revertir.

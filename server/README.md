@@ -45,5 +45,6 @@ npm test            # sin Google real ni .env
   que lleva de la versión anterior a la nueva.
 - **Una sola instancia de cada proceso:** los contadores del límite viven en memoria.
 - **Sin datos personales en logs:** solo UUID, número de intento y estado.
-- **Rutas:** si se mueven `api.mjs` o `worker.mjs`, actualizar `deploy/ecosystem.config.cjs`
-  y en el VPS hacer `pm2 delete` + `pm2 start` (ver [docs/despliegue.md](../docs/despliegue.md)).
+- **Rutas:** si se mueven `api.mjs` o `worker.mjs`, actualizar `deploy/ecosystem.config.cjs`.
+  `deploy.sh` recrea los procesos de PM2 cuando cambia `server/` o `deploy/`
+  (ver [docs/despliegue.md](../docs/despliegue.md)).
