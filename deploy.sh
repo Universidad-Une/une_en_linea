@@ -7,23 +7,41 @@ BLUE='\033[0;34m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-echo -e "${GREEN}Iniciando deploy ...${NC}"
+# El proyecto es la carpeta donde está este script: /var/www/une_en_linea (producción)
+# o /var/www/preview_une_en_linea (preview). APP_ENV en su .env define el resto.
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+cd "$PROJECT_DIR" || exit 1
+source "$PROJECT_DIR/deploy/entorno.sh"
 
-# Lock para evitar deploys simultáneos
-LOCKFILE="/var/lock/une_deploy.lock"
+echo -e "${GREEN}Iniciando deploy (${APP_ENV}) en ${PROJECT_DIR} ...${NC}"
+
+# Lock para evitar deploys simultáneos del mismo entorno
+LOCKFILE="/var/lock/une_deploy_${APP_ENV}.lock"
 if [ -f "$LOCKFILE" ]; then
-    echo -e "${RED}ERROR: Ya hay un deploy en ejecución. Abortando.${NC}"
+    echo -e "${RED}ERROR: Ya hay un deploy de ${APP_ENV} en ejecución. Abortando.${NC}"
     exit 1
 fi
 echo $$ > "$LOCKFILE"
 trap "rm -f $LOCKFILE" EXIT
 
 # Configuración de rutas
-PROJECT_DIR="/var/www/une_en_linea"
 CACHE_GLOBAL="$PROJECT_DIR/persistent_astro_cache"
 HISTORY_DIR="$PROJECT_DIR/assets_history"
 
-cd $PROJECT_DIR || exit 1
+# Puerto de la API: preview y producción comparten servidor, no pueden usar el mismo.
+API_PORT=$(leer_env API_PORT)
+API_PORT="${API_PORT:-4322}"
+if [ "$APP_ENV" = "preview" ] && [ "$API_PORT" = "4322" ]; then
+    echo -e "${RED}ERROR: preview necesita su propio API_PORT en .env (4322 es el de producción).${NC}"
+    exit 1
+fi
+
+# Cada carpeta despliega solo su rama: evita publicar preview en producción o al revés.
+RAMA_ACTUAL=$(git rev-parse --abbrev-ref HEAD)
+if [ "$RAMA_ACTUAL" != "$RAMA_ESPERADA" ]; then
+    echo -e "${RED}ERROR: ${PROJECT_DIR} está en la rama '${RAMA_ACTUAL}'; APP_ENV=${APP_ENV} despliega '${RAMA_ESPERADA}'.${NC}"
+    exit 1
+fi
 
 # Asegurar que existan los directorios base
 mkdir -p "$CACHE_GLOBAL"
@@ -85,7 +103,7 @@ fi
 # Generar nombres únicos para este build
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 BUILD_DIR="$PROJECT_DIR/releases/build_$TIMESTAMP"
-TEMP_BUILD="/tmp/une_build_$TIMESTAMP"
+TEMP_BUILD="/tmp/une_build_${APP_ENV}_$TIMESTAMP"
 
 echo -e "${YELLOW}Preparando entorno de build temporal...${NC}"
 START=$(date +%s)
@@ -103,8 +121,9 @@ mkdir -p "$TEMP_BUILD/node_modules/.astro"
 rm -rf "$TEMP_BUILD/node_modules/.astro"
 ln -s "$CACHE_GLOBAL" "$TEMP_BUILD/node_modules/.astro"
 
-# El build temporal no copia .env: pasar SITE_NOINDEX (true en el servidor de preview).
-SITE_NOINDEX=$(grep -E '^SITE_NOINDEX=' .env 2>/dev/null | cut -d= -f2 | tr -d '[:space:]')
+# El build temporal no copia .env: pasar SITE_NOINDEX. Preview nunca se indexa.
+SITE_NOINDEX=$(leer_env SITE_NOINDEX)
+[ "$APP_ENV" = "preview" ] && SITE_NOINDEX=true
 export SITE_NOINDEX="${SITE_NOINDEX:-false}"
 if [ "$SITE_NOINDEX" = "true" ]; then
     echo -e "${YELLOW}SITE_NOINDEX=true: el sitio se publicará sin indexación (preview).${NC}"
@@ -200,7 +219,7 @@ if [ -n "$BACKEND_CHANGED" ]; then
     fi
 
     # delete + start (no reload) para que PM2 tome siempre las rutas actuales del ecosystem.
-    pm2 delete une-api une-worker >/dev/null 2>&1
+    pm2 delete "$PM2_API" "$PM2_WORKER" >/dev/null 2>&1
     pm2 start deploy/ecosystem.config.cjs && pm2 save
     if [ $? -ne 0 ]; then
         echo -e "${RED}ERROR: No se pudieron iniciar API y worker con PM2.${NC}"
@@ -211,8 +230,7 @@ else
 fi
 
 # Verificar que la API responde: un JSON vacío debe dar 400 (o 429 si hay límite activo).
-API_PORT=$(grep -E '^API_PORT=' .env 2>/dev/null | cut -d= -f2 | tr -d '[:space:]')
-API_URL="http://127.0.0.1:${API_PORT:-4322}/api/forms/inscripcion"
+API_URL="http://127.0.0.1:${API_PORT}/api/forms/inscripcion"
 echo -e "${BLUE}Verificando API en ${API_URL}...${NC}"
 API_STATUS=000
 for _ in $(seq 1 10); do
@@ -222,12 +240,12 @@ for _ in $(seq 1 10); do
     sleep 1
 done
 if [ "$API_STATUS" != "400" ] && [ "$API_STATUS" != "429" ]; then
-    echo -e "${RED}ERROR: La API no responde como se espera (HTTP ${API_STATUS}). Revisa: pm2 status, pm2 logs une-api${NC}"
+    echo -e "${RED}ERROR: La API no responde como se espera (HTTP ${API_STATUS}). Revisa: pm2 status, pm2 logs ${PM2_API}${NC}"
     exit 1
 fi
 echo -e "${GREEN}API respondiendo (HTTP ${API_STATUS}).${NC}"
-if ! pm2 describe une-worker 2>/dev/null | grep -q "online"; then
-    echo -e "${RED}ERROR: une-worker no está en línea. Revisa: pm2 logs une-worker${NC}"
+if ! pm2 describe "$PM2_WORKER" 2>/dev/null | grep -q "online"; then
+    echo -e "${RED}ERROR: ${PM2_WORKER} no está en línea. Revisa: pm2 logs ${PM2_WORKER}${NC}"
     exit 1
 fi
 echo -e "${GREEN}Worker en línea.${NC}"
@@ -239,6 +257,7 @@ echo -e "${GREEN}DEPLOY COMPLETADO EXITOSAMENTE${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo -e "${BLUE}Estadísticas del deploy:${NC}"
 echo -e "  Duración del build: ${DURATION}s"
+echo -e "  Entorno: $APP_ENV ($PROJECT_DIR)"
 echo -e "  Versión desplegada: $TIMESTAMP"
 echo -e "  Commit: $(git log -1 --oneline)"
 echo ""
