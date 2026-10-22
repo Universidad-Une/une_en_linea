@@ -26,6 +26,8 @@ export default defineConfig({
         "@layouts": path.resolve("./src/layouts"),
         "@pages": path.resolve("./src/pages"),
         "@helpers": path.resolve("./src/helpers"),
+        // Solo para código que también corre en el navegador (p. ej. server/validacion.mjs).
+        "@server": path.resolve("./server"),
         "@layout": path.resolve("./src/components/layout"),
         "@logos": path.resolve("./src/assets/Logos"),
       },

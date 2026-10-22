@@ -1,5 +1,5 @@
 ---
-import { CAMPOS_INSCRIPCION } from "../../../server/validacion.mjs";
+import { CAMPOS_INSCRIPCION } from "@server/validacion.mjs";
 import WelcomeCard from "./WelcomeCard.astro";
 import {
   LoaderCircle,
@@ -419,7 +419,7 @@ const adicionales = camposFormulario.filter(([campo]) =>
 <script>
   import {
     validarInscripcion,
-  } from "../../../server/validacion.mjs";
+  } from "@server/validacion.mjs";
   const form = document.querySelector<HTMLFormElement>(
     "#formulario-inscripcion",
   )!;

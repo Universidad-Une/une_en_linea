@@ -14,7 +14,8 @@
       "@layout/*": ["src/components/layout/*"],
       "@logos/*": ["src/assets/Logos/*"],
       "@icons/*": ["src/assets/icons/*"],
-      "@helpers/*": ["src/helpers/*"]
+      "@helpers/*": ["src/helpers/*"],
+      "@server/*": ["server/*"]
     }
   }
 }

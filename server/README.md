@@ -35,8 +35,9 @@ npm test            # sin Google real ni .env
 
 ## Reglas al modificar
 
-- **`validacion.mjs` también corre en el navegador:** `Form.astro` lo importa. No usar
-  módulos de Node (`node:*`, `fs`, `process`) en ese archivo.
+- **`validacion.mjs` también corre en el navegador:** `Form.astro` y `GeneralCTA.astro` lo
+  importan como `@server/validacion.mjs`. No usar módulos de Node (`node:*`, `fs`, `process`)
+  en ese archivo. Dentro de `server/` los imports son relativos: Node no conoce los alias de Vite.
 - **El contrato de campos está en dos lugares:** `validacion.mjs` y
   `apps-script/recibir-inscripcion.js` (Apps Script no puede importar). Un cambio de
   preguntas u opciones se hace en los dos y se vuelve a publicar el receptor.
