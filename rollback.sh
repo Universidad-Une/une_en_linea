@@ -7,23 +7,25 @@ BLUE='\033[0;34m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-echo -e "${GREEN}Iniciando rollback ...${NC}"
+# El proyecto es la carpeta donde está este script (producción o preview, ver deploy.sh).
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+cd "$PROJECT_DIR" || exit 1
+source "$PROJECT_DIR/deploy/entorno.sh"
 
-# Lock para evitar rollbacks simultáneos
-LOCKFILE="/var/lock/une_rollback.lock"
+echo -e "${GREEN}Iniciando rollback (${APP_ENV}) en ${PROJECT_DIR} ...${NC}"
+
+# Lock para evitar rollbacks simultáneos del mismo entorno
+LOCKFILE="/var/lock/une_rollback_${APP_ENV}.lock"
 if [ -f "$LOCKFILE" ]; then
-    echo -e "${RED}ERROR: Ya hay un rollback en ejecución. Abortando.${NC}"
+    echo -e "${RED}ERROR: Ya hay un rollback de ${APP_ENV} en ejecución. Abortando.${NC}"
     exit 1
 fi
 echo $$ > "$LOCKFILE"
 trap "rm -f $LOCKFILE" EXIT
 
 # Configuración de rutas
-PROJECT_DIR="/var/www/une_en_linea"
 RELEASES_DIR="$PROJECT_DIR/releases"
 CURRENT_LINK="$PROJECT_DIR/dist"
-
-cd $PROJECT_DIR || exit 1
 
 # Verificar que exista el directorio de releases
 if [ ! -d "$RELEASES_DIR" ]; then

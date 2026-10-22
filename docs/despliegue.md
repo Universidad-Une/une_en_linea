@@ -72,23 +72,60 @@ revierten con él. No sobrescribir la base al desplegar ni al revertir.
 
 ## Servidor de preview
 
-El servidor de preview despliega la rama `preview` con el mismo `./deploy.sh`. Para que
-no compita con producción en buscadores ni lo usen motores de IA, su `.env` lleva:
+Preview y producción viven en el mismo VPS, cada uno en su carpeta y con su propio
+`.env`. `deploy.sh` y `rollback.sh` operan sobre la carpeta donde están, y `APP_ENV`
+define todo lo demás (`deploy/entorno.sh`):
 
-```dotenv
-SITE_NOINDEX=true
-```
+| | Producción | Preview |
+|---|---|---|
+| Carpeta | `/var/www/une_en_linea` | `/var/www/preview_une_en_linea` |
+| Rama que despliega | `main` | `preview` |
+| `APP_ENV` | `production` (o sin definir) | `preview` |
+| Procesos PM2 | `une-api`, `une-worker` | `une-api-preview`, `une-worker-preview` |
+| `API_PORT` | 4322 | otro, p. ej. 4323 (obligatorio) |
+| Indexación | sí | nunca: `SITE_NOINDEX` se fuerza a `true` |
 
-Con eso el build agrega `<meta name="robots" content="noindex, nofollow, noarchive, …">`
-en todas las páginas, genera un `robots.txt` con `Disallow: /` y no genera el sitemap.
-El `canonical` de cada página sigue apuntando a `https://une-enlinea.com`.
+`deploy.sh` se detiene si la carpeta está en otra rama que la de su `APP_ENV`, o si
+preview usa el puerto 4322.
 
-Como respaldo para archivos que no son HTML (PDF, imágenes), agregar en el bloque
-`server` de nginx del preview:
+### Primera instalación
 
-```nginx
-add_header X-Robots-Tag "noindex, nofollow, noarchive" always;
-```
+1. Clonar la rama `preview`:
+   ```sh
+   git clone -b preview https://github.com/Universidad-Une/une_en_linea.git /var/www/preview_une_en_linea
+   ```
+2. Crear `/var/www/preview_une_en_linea/.env`:
+   ```dotenv
+   APP_ENV=preview
+   API_PORT=4323
+   INSCRIPCION_TRUST_PROXY=true
+   SQLITE_DB_PATH=/var/www/preview_data/inscripciones.sqlite
+   GOOGLE_FORMS_SCRIPT_URL=   # Apps Script y Form DE PRUEBA, no los de producción
+   GOOGLE_FORMS_SHARED_SECRET=
+   ```
+   Base y Form separados: si apunta a los de producción, lo que se envíe en preview
+   aparecerá como inscripciones reales.
+3. En `/etc/nginx/sites-available/preview_une_en_linea.conf`, dentro del bloque `server`:
+   ```nginx
+   include /var/www/preview_une_en_linea/deploy/nginx-inscripcion-preview.conf;
+   ```
+   (el puerto del fragmento debe coincidir con `API_PORT`). Luego
+   `sudo nginx -t && sudo systemctl reload nginx`.
+4. Desde la carpeta de preview, con el mismo usuario que administra PM2:
+   ```sh
+   ./deploy.sh
+   ```
+
+Después, cada actualización es `git push` a `preview` y `./deploy.sh` en esa carpeta.
+`./rollback.sh` en esa carpeta revierte solo el sitio de preview.
+
+### Indexación
+
+Con `APP_ENV=preview` el build agrega
+`<meta name="robots" content="noindex, nofollow, noarchive, …">` en todas las páginas,
+genera un `robots.txt` con `Disallow: /` y no genera el sitemap. El `canonical` sigue
+apuntando a `https://une-enlinea.com`. Para archivos que no son HTML (PDF, imágenes),
+nginx de preview ya envía `X-Robots-Tag "noindex, nofollow, noarchive"`.
 
 `robots.txt` y la etiqueta meta son peticiones que los rastreadores respetan por
 cortesía. Si el preview no debe ser público, protegerlo además con `auth_basic` en nginx.
