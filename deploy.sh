@@ -178,7 +178,7 @@ SOURCE_ASSETS="$BUILD_DIR/_astro"
 
 if [ -d "$SOURCE_ASSETS" ]; then
     # Copiar solo archivos nuevos (no sobrescribir existentes)
-    cp -rn "$SOURCE_ASSETS"/* "$HISTORY_DIR/_astro/"
+    rsync -a --ignore-existing "$SOURCE_ASSETS"/ "$HISTORY_DIR/_astro/"
     sudo chown -R www-data:www-data "$HISTORY_DIR"
     echo -e "${GREEN}Historial de assets actualizado.${NC}"
 else
@@ -187,9 +187,13 @@ fi
 
 # Mantener solo los últimos 3 builds (limpieza de espacio)
 echo -e "${BLUE}Limpiando builds antiguos...${NC}"
-cd releases
-ls -t | grep "^build_" | tail -n +4 | xargs -r rm -rf
-cd ..
+# Los builds son de www-data (ver chown arriba): borrarlos requiere sudo. Solo se tocan
+# carpetas build_* de este proyecto y nunca la que está publicada en dist.
+BUILD_PUBLICADO=$(readlink -f "$PROJECT_DIR/dist")
+for VIEJO in $(ls -t "$PROJECT_DIR/releases" | grep "^build_" | tail -n +4); do
+    [ "$PROJECT_DIR/releases/$VIEJO" = "$BUILD_PUBLICADO" ] && continue
+    sudo rm -rf -- "$PROJECT_DIR/releases/$VIEJO"
+done
 
 # Recargar configuración de Nginx
 echo -e "${YELLOW}Recargando Nginx...${NC}"
