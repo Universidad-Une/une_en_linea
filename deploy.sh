@@ -103,6 +103,13 @@ mkdir -p "$TEMP_BUILD/node_modules/.astro"
 rm -rf "$TEMP_BUILD/node_modules/.astro"
 ln -s "$CACHE_GLOBAL" "$TEMP_BUILD/node_modules/.astro"
 
+# El build temporal no copia .env: pasar SITE_NOINDEX (true en el servidor de preview).
+SITE_NOINDEX=$(grep -E '^SITE_NOINDEX=' .env 2>/dev/null | cut -d= -f2 | tr -d '[:space:]')
+export SITE_NOINDEX="${SITE_NOINDEX:-false}"
+if [ "$SITE_NOINDEX" = "true" ]; then
+    echo -e "${YELLOW}SITE_NOINDEX=true: el sitio se publicará sin indexación (preview).${NC}"
+fi
+
 # Ejecutar build en directorio temporal
 echo -e "${YELLOW}Ejecutando build de Astro...${NC}"
 cd "$TEMP_BUILD" || exit 1

@@ -4,6 +4,7 @@ import Header from "../components/layout/Header.astro";
 import Footer from "../components/layout/Footer.astro";
 import "../styles/global.css";
 import Clarity from "../components/layout/Clarity.astro";
+import { SITE_NOINDEX } from "astro:env/server";
 // Configuración por defecto
 const defaultConfig = {
   projectId: "vdrk4ino0x", // Clarity ID
@@ -30,6 +31,9 @@ const {
   ogImage = defaultConfig.ogImage,
 } = Astro.props;
 
+// SITE_NOINDEX=true (preview) bloquea la indexación de todo el sitio, además del noIndex por página.
+const bloquearIndexacion = noIndex || SITE_NOINDEX;
+
 // Generar título completo
 const fullTitle = title === defaultConfig.title ? title : `${title} | UNE`;
 
@@ -48,8 +52,11 @@ const fullOgImage = `${Astro.url.origin}${ogImage}`;
 
     {/* Control de indexación */}
     {
-      noIndex ? (
-        <meta name="robots" content="noindex, nofollow" />
+      bloquearIndexacion ? (
+        <meta
+          name="robots"
+          content="noindex, nofollow, noarchive, nosnippet, noimageindex, noai, noimageai"
+        />
       ) : (
         <meta
           name="robots"
@@ -130,7 +137,7 @@ const fullOgImage = `${Astro.url.origin}${ogImage}`;
     <meta property="og:image:alt" content={`${fullTitle} - Logo`} />
     <meta property="og:locale" content="es_MX" />
     <meta property="og:site_name" content="Centro Universitario UNE" />
-    <link rel="sitemap" href="/sitemap-index.xml" />
+    {!SITE_NOINDEX && <link rel="sitemap" href="/sitemap-index.xml" />}
 
     {/* Twitter Card optimizado */}
     <meta name="twitter:card" content="summary_large_image" />

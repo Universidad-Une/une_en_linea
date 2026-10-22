@@ -69,3 +69,26 @@ siguiente `./deploy.sh`. Si `db:init` falla, API y worker siguen con la versión
 
 `./rollback.sh` solo revierte el sitio estático. API, worker y esquema SQLite no se
 revierten con él. No sobrescribir la base al desplegar ni al revertir.
+
+## Servidor de preview
+
+El servidor de preview despliega la rama `preview` con el mismo `./deploy.sh`. Para que
+no compita con producción en buscadores ni lo usen motores de IA, su `.env` lleva:
+
+```dotenv
+SITE_NOINDEX=true
+```
+
+Con eso el build agrega `<meta name="robots" content="noindex, nofollow, noarchive, …">`
+en todas las páginas, genera un `robots.txt` con `Disallow: /` y no genera el sitemap.
+El `canonical` de cada página sigue apuntando a `https://une-enlinea.com`.
+
+Como respaldo para archivos que no son HTML (PDF, imágenes), agregar en el bloque
+`server` de nginx del preview:
+
+```nginx
+add_header X-Robots-Tag "noindex, nofollow, noarchive" always;
+```
+
+`robots.txt` y la etiqueta meta son peticiones que los rastreadores respetan por
+cortesía. Si el preview no debe ser público, protegerlo además con `auth_basic` en nginx.
