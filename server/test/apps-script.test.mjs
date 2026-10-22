@@ -18,12 +18,14 @@ function fixture(options = {}) {
   let failAfterSave = options.failAfterSave;
   const saved = [];
   const responses = [];
+  const busquedas = [];
   const context = {
     console: { log() {}, error() {} },
     PropertiesService: {
       getScriptProperties: () => ({
         getProperty: (key) =>
-          key === "FORM_ID" ? "form-test" : key === "REQUEST_ID_ITEM_ID"
+          options.props && key in options.props ? options.props[key]
+          : key === "FORM_ID" ? "form-test" : key === "REQUEST_ID_ITEM_ID"
             ? (options.itemId === undefined ? String(technicalItemId) : options.itemId)
             : "s".repeat(32),
       }),
@@ -72,9 +74,11 @@ function fixture(options = {}) {
   context.FormApp = {
     openById: () => ({
       isAcceptingResponses: () => !options.closed,
-      getResponses: () => {
+      getResponses: (desde) => {
         assert.equal(locked, true, "La búsqueda debe ejecutarse bajo bloqueo");
-        return saved.map(({ id, items }) => ({
+        assert.equal(typeof desde?.getTime, "function", "La búsqueda debe limitarse a respuestas recientes");
+        busquedas.push(desde);
+        return saved.filter(({ at }) => at >= desde).map(({ id, items }) => ({
           getId: () => id,
           getItemResponses: () => items.map(({ id, value }) => ({
             getItem: () => ({ getId: () => id }), getResponse: () => value,
@@ -112,7 +116,7 @@ function fixture(options = {}) {
           assert.equal(locked, true, "El envío debe ejecutarse bajo bloqueo");
           submissions++;
           const id = `response-test-${submissions}`;
-          saved.push({ id, items });
+          saved.push({ id, items, at: new Date() });
           if (failAfterSave) { failAfterSave = false; throw new Error("Confirmación perdida después de guardar"); }
           return { getId: () => id };
         },
@@ -130,6 +134,10 @@ function fixture(options = {}) {
       }),
     raw: (contents) => context.doPost({ postData: { contents } }),
     count: () => submissions,
+    busquedas,
+    // Respuesta ya guardada hace `dias` días con el UUID dado.
+    previa: (id, dias, uuid = requestId) => saved.push({ id, at: new Date(Date.now() - dias * 86400000),
+      items: [{ id: technicalItemId, value: uuid }] }),
   };
 }
 
@@ -296,4 +304,35 @@ test("libera el bloqueo ante validación fallida y normaliza UUID", () => {
   f.send(undefined, requestId.toUpperCase());
   assert.equal(f.send().deduplicated, true);
   assert.equal(f.count(), 1);
+});
+
+test("la deduplicación solo revisa respuestas recientes (7 días por defecto)", () => {
+  const f = fixture();
+  f.previa("respuesta-reciente", 1);
+  const reciente = f.send();
+  assert.equal(reciente.responseId, "respuesta-reciente");
+  assert.equal(reciente.deduplicated, true);
+  const dias = (Date.now() - f.busquedas[0].getTime()) / 86400000;
+  assert.ok(Math.abs(dias - 7) < 0.01, `ventana de ${dias} días`);
+  assert.equal(f.count(), 0);
+});
+
+test("una respuesta fuera de la ventana ya no se considera duplicado", () => {
+  const f = fixture();
+  f.previa("respuesta-vieja", 10);
+  const result = f.send();
+  assert.equal(result.deduplicated, false);
+  assert.equal(f.count(), 1);
+});
+
+test("DEDUP_DIAS amplía la ventana y los valores inválidos usan 7 días", () => {
+  const amplia = fixture({ props: { DEDUP_DIAS: "30" } });
+  amplia.previa("respuesta-vieja", 10);
+  assert.equal(amplia.send().responseId, "respuesta-vieja");
+  for (const valor of ["0", "-3", "abc", "1.5", "99999"]) {
+    const f = fixture({ props: { DEDUP_DIAS: valor } });
+    f.send();
+    const dias = (Date.now() - f.busquedas[0].getTime()) / 86400000;
+    assert.ok(Math.abs(dias - 7) < 0.01, `${valor} → ${dias} días`);
+  }
 });

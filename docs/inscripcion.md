@@ -21,8 +21,10 @@ server/worker.mjs ── toma un trabajo de la cola (lease de 90 s)
   Sin worker activo no se envía nada, ni siquiera el primer intento.
 - **`requestId`** es el UUID de `inscripciones.id`. Se reutiliza en cada reintento.
   Apps Script lo guarda en la pregunta técnica "ID de solicitud" y, si ya existe, devuelve
-  el `responseId` anterior en vez de crear otra respuesta. Un nuevo envío desde el
-  navegador genera otro UUID: no se deduplica por nombre, correo ni teléfono.
+  el `responseId` anterior en vez de crear otra respuesta. Solo busca en las respuestas de
+  los últimos 7 días (propiedad `DEDUP_DIAS` del script): un reintento más tardío, por
+  ejemplo con el worker detenido más de una semana, podría crear un duplicado. Un nuevo
+  envío desde el navegador genera otro UUID: no se deduplica por nombre, correo ni teléfono.
 - El formulario está en `src/components/inscripcion/Form.astro` y se usa en
   `/formulario-inscripcion` y `/contacto/solicitarinformacion`. Tras el 202 redirige a
   `/contacto/gracias`. Importa `server/validacion.mjs` para validar en el
@@ -94,7 +96,7 @@ npm run db:query -- "SELECT payload FROM inscripciones WHERE id = 'UUID'"
 | `FAILED` con `UNAUTHORIZED` | `GOOGLE_FORMS_SHARED_SECRET` distinto de `SHARED_SECRET` en Apps Script |
 | `FAILED` con `FORM_SCHEMA_CHANGED` | Alguien cambió o borró una pregunta del Google Form |
 | `FAILED` con `FORM_CLOSED` | El Google Form dejó de aceptar respuestas |
-| Muchas `UNKNOWN` por timeout | Apps Script lento; ver la búsqueda de duplicados en el receptor |
+| Muchas `UNKNOWN` por timeout | Apps Script lento; si hay muchas respuestas por día, bajar `DEDUP_DIAS` |
 | `RETRY` con `RECEIVER_BUSY` | Bloqueo de Apps Script ocupado; se resuelve solo |
 
 Para `needs_review=1` todavía no hay comando de reactivación: corregir la causa y

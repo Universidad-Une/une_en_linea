@@ -16,6 +16,8 @@ guarda la respuesta en Google Forms. El flujo completo está en
    - `FORM_ID`: ID del formulario (el de la URL del editor).
    - `SHARED_SECRET`: mínimo 32 caracteres, igual a `GOOGLE_FORMS_SHARED_SECRET`.
    - `REQUEST_ID_ITEM_ID`: el ID del paso 3.
+   - `DEDUP_DIAS` (opcional, 7 por defecto): cuántos días hacia atrás se buscan respuestas
+     con el mismo `requestId`. Subirlo solo si el worker estuvo detenido más tiempo.
 5. Publicar una **nueva versión** de la aplicación web: ejecutar como tu cuenta, acceso
    para cualquier persona.
 6. Si cambió la URL `/exec`, actualizar `GOOGLE_FORMS_SCRIPT_URL` en el servidor y reiniciar

@@ -122,12 +122,25 @@ function validarDatosInscripcion_(datos) {
   return { valores, errores };
 }
 
-function buscarRespuestaPorSolicitud_(form, requestId, itemId) {
-  for (const respuesta of form.getResponses()) {
-    const item = respuesta.getItemResponses().find(
+// Los reintentos de un mismo requestId llegan en minutos u horas, así que solo se revisan
+// las respuestas recientes en vez de todo el historial del formulario. La propiedad
+// opcional DEDUP_DIAS amplía la ventana si el worker estuvo detenido más tiempo.
+const DEDUP_DIAS_PREDETERMINADO = 7;
+
+function diasDeduplicacion_(valor) {
+  const dias = Number(valor);
+  return Number.isInteger(dias) && dias > 0 && dias <= 3650 ? dias : DEDUP_DIAS_PREDETERMINADO;
+}
+
+function buscarRespuestaPorSolicitud_(form, requestId, itemId, dias) {
+  const desde = new Date(Date.now() - dias * 24 * 60 * 60 * 1000);
+  const recientes = form.getResponses(desde);
+  // De la más nueva a la más vieja: el duplicado casi siempre es de hace minutos.
+  for (let i = recientes.length - 1; i >= 0; i--) {
+    const item = recientes[i].getItemResponses().find(
       (r) => r.getItem().getId() === itemId,
     );
-    if (item && item.getResponse() === requestId) return respuesta.getId();
+    if (item && item.getResponse() === requestId) return recientes[i].getId();
   }
   return null;
 }
@@ -217,7 +230,9 @@ function doPost(e) {
     if (!acquired) {
       return respuestaJson_({ success: false, error: "RECEIVER_BUSY" });
     }
-    const previousId = buscarRespuestaPorSolicitud_(form, requestId, itemId);
+    const previousId = buscarRespuestaPorSolicitud_(
+      form, requestId, itemId, diasDeduplicacion_(propiedades.getProperty("DEDUP_DIAS")),
+    );
     if (previousId) {
       return respuestaJson_({ success: true, requestId, responseId: previousId, deduplicated: true });
     }
