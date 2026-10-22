@@ -177,8 +177,9 @@ echo -e "${BLUE}Actualizando historial de assets...${NC}"
 SOURCE_ASSETS="$BUILD_DIR/_astro"
 
 if [ -d "$SOURCE_ASSETS" ]; then
-    # Copiar solo archivos nuevos (no sobrescribir existentes)
-    rsync -a --ignore-existing "$SOURCE_ASSETS"/ "$HISTORY_DIR/_astro/"
+    # Copiar solo archivos nuevos (no sobrescribir existentes). Sin -a: las carpetas son
+    # de www-data y no se les pueden cambiar fechas ni permisos como web_deployer.
+    rsync -r --ignore-existing "$SOURCE_ASSETS"/ "$HISTORY_DIR/_astro/"
     sudo chown -R www-data:www-data "$HISTORY_DIR"
     echo -e "${GREEN}Historial de assets actualizado.${NC}"
 else
