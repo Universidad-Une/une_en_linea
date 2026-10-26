@@ -65,18 +65,21 @@ NEW_HASH=$(git rev-parse HEAD)
 # Verificar si hubo cambios
 if [ "$OLD_HASH" == "$NEW_HASH" ]; then
     echo -e "${YELLOW}AVISO: No se detectaron cambios nuevos en el código.${NC}"
-    
+
+    # Forzado (deploy/migrar-produccion.sh ya actualizó la rama antes de llamar a deploy.sh)
+    if [ "$1" == "--force" ]; then
+        echo -e "${YELLOW}--force: desplegando de todos modos.${NC}"
     # Modo automático (CI/CD)
-    if [ -n "$CI" ] || [ "$1" == "--auto" ]; then
+    elif [ -n "$CI" ] || [ "$1" == "--auto" ]; then
         echo -e "${GREEN}Modo automático: Saltando deploy (sin cambios).${NC}"
         exit 0
-    fi
-    
-    # Modo manual - pedir confirmación
-    read -t 10 -p "¿Deseas forzar el despliegue de todos modos? (s/N): " CONFIRM
-    if [[ "$CONFIRM" != "s" && "$CONFIRM" != "S" ]]; then
-        echo -e "\n${GREEN}Deploy cancelado por el usuario.${NC}"
-        exit 0
+    else
+        # Modo manual - pedir confirmación
+        read -t 10 -p "¿Deseas forzar el despliegue de todos modos? (s/N): " CONFIRM
+        if [[ "$CONFIRM" != "s" && "$CONFIRM" != "S" ]]; then
+            echo -e "\n${GREEN}Deploy cancelado por el usuario.${NC}"
+            exit 0
+        fi
     fi
 fi
 
