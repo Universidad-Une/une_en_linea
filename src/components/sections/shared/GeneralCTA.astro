@@ -4,6 +4,7 @@ import { ChevronDown } from "@lucide/astro";
 import { Image } from "astro:assets";
 import Instalaciones from "@/assets/imagenes/Sillas.webp";
 import { CAMPOS_INSCRIPCION } from "@server/validacion.mjs";
+import { etiquetaOpcion } from "@/components/inscripcion/etiquetas.mjs";
 export interface Props {
   title?: string;
   subtitle?: string;
@@ -49,7 +50,7 @@ const programaPorPagina: Record<string, string> = {
 const pagina = Astro.url.pathname.replace(/\/+$/, "").split("/").pop() ?? "";
 const programaInicial = programa ?? programaPorPagina[pagina] ?? "";
 const claseCampo =
-  "w-full bg-transparent border-b-2 border-white/60 text-white placeholder-white/80 py-2 sm:py-3 focus:outline-none focus:border-white transition-colors text-base sm:text-lg";
+  "w-full bg-transparent border-b-2 border-white/60 text-white placeholder-white/80 py-2 sm:py-3 2xl:py-4 focus:outline-none focus:border-white transition-colors text-base sm:text-lg 2xl:text-xl";
 const claseSelect = `${claseCampo} appearance-none cursor-pointer [&>option]:text-gray-900 [&>option]:bg-white`;
 ---
 
@@ -71,14 +72,14 @@ const claseSelect = `${claseCampo} appearance-none cursor-pointer [&>option]:tex
     </div>
   )}
 
-  <div class="relative z-10 max-w-6xl mx-auto">
+  <div class="relative z-10 max-w-6xl 2xl:max-w-7xl min-[1920px]:max-w-[1440px] mx-auto">
     <div
-      class="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start lg:items-center"
+      class="grid lg:grid-cols-2 gap-8 lg:gap-12 2xl:gap-20 items-start lg:items-center"
     >
       <!-- Left Column: Title -->
       <div class="text-white text-center lg:text-left">
-        <p class="text-base sm:text-lg font-medium mb-3 sm:mb-4">{subtitle}</p>
-        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">
+        <p class="text-base sm:text-lg 2xl:text-xl font-medium mb-3 sm:mb-4">{subtitle}</p>
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl 2xl:text-6xl font-bold leading-tight">
           {title}
         </h2>
       </div>
@@ -135,7 +136,9 @@ const claseSelect = `${claseCampo} appearance-none cursor-pointer [&>option]:tex
               <option value="" disabled selected={!programaInicial}>Programa de interés</option>
               {
                 programas.map((opcion) => (
-                  <option value={opcion} selected={opcion === programaInicial}>{opcion}</option>
+                  <option value={opcion} selected={opcion === programaInicial}>
+                    {etiquetaOpcion("programaAcademico", opcion)}
+                  </option>
                 ))
               }
             </select>
@@ -173,7 +176,7 @@ const claseSelect = `${claseCampo} appearance-none cursor-pointer [&>option]:tex
           <div class="relative">
             <select name="edad" aria-label="Edad" required class={claseSelect}>
               <option value="" disabled selected>Edad</option>
-              {edades.map((opcion) => <option value={opcion}>{opcion} años</option>)}
+              {edades.map((opcion) => <option value={opcion}>{etiquetaOpcion("edad", opcion)}</option>)}
             </select>
             <ChevronDown
               className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-white/80 pointer-events-none"
@@ -181,13 +184,13 @@ const claseSelect = `${claseCampo} appearance-none cursor-pointer [&>option]:tex
           </div>
 
           <fieldset class="text-white">
-            <legend class="text-base sm:text-lg text-white/80 mb-2">¿Cómo nos conociste?</legend>
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2 text-sm sm:text-base">
+            <legend class="text-base sm:text-lg 2xl:text-xl text-white/80 mb-2">¿Cómo nos conociste?</legend>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2 2xl:gap-y-3 text-sm sm:text-base 2xl:text-lg">
               {
                 medios.map((opcion) => (
                   <label class="inline-flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" name="mediosSeleccionados" value={opcion} class="accent-white w-4 h-4" />
-                    <span>{opcion}</span>
+                    <span>{etiquetaOpcion("mediosSeleccionados", opcion)}</span>
                   </label>
                 ))
               }
@@ -267,6 +270,7 @@ const claseSelect = `${claseCampo} appearance-none cursor-pointer [&>option]:tex
 
 <script>
   import { validarInscripcion } from "@server/validacion.mjs";
+  import { etiquetaOpcion } from "@/components/inscripcion/etiquetas.mjs";
 
   const WHATSAPP_NUMBER = "3380000801";
   const TIMEOUT_MS = 15000;
@@ -432,7 +436,9 @@ const claseSelect = `${claseCampo} appearance-none cursor-pointer [&>option]:tex
     // WhatsApp fallback
     const sendToWhatsApp = (data: Datos) => {
       const nombre = String(data.nombres || "");
-      const programa = String(data.programaAcademico || "Informes");
+      const programa = data.programaAcademico
+        ? etiquetaOpcion("programaAcademico", String(data.programaAcademico))
+        : "Informes";
       const msg = `Hola, intenté registrarme en la web pero hubo un problema. %0A*Nombre:* ${encodeURIComponent(nombre)}%0A*Interés:* ${encodeURIComponent(programa)}`;
 
       showMessage(

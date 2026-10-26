@@ -1,5 +1,6 @@
 ---
 import { CAMPOS_INSCRIPCION } from "@server/validacion.mjs";
+import { ETIQUETAS_CAMPOS, etiquetaOpcion } from "./etiquetas.mjs";
 import WelcomeCard from "./WelcomeCard.astro";
 import {
   LoaderCircle,
@@ -18,7 +19,7 @@ interface Props {
 const { variant = "inscripcion", origenFormulario = variant } = Astro.props;
 // La aceptación del aviso se valida solo en la interfaz, sin pregunta de destino.
 const camposLocales = [
-  ["compromiso", null, "MULTIPLE_CHOICE", true, "Como alumno de CENTRO UNIVERSITARIO UNE A.C., me comprometo a respetar y cumplir con el reglamento institucional; Así mismo autorizo a CENTRO UNIVERSITARIO UNE A.C. al uso interno y con fines de inscribirme como alumno para el uso de mis datos personales; Entiendo que el llenado de esta solicitud no garantiza mi inscripción y que será válida hasta que realice el pago de la primer parcialidad que corresponde al ciclo escolar. https://une-enlinea.com/", ["Sí"]],
+  ["compromiso", null, "MULTIPLE_CHOICE", true, "Como alumno de CENTRO UNIVERSITARIO UNE A.C., me comprometo a respetar y cumplir con el reglamento institucional; asimismo, autorizo a CENTRO UNIVERSITARIO UNE A.C. al uso interno y con fines de inscribirme como alumno para el uso de mis datos personales. Entiendo que el llenado de esta solicitud no garantiza mi inscripción y que será válida hasta que realice el pago de la primera parcialidad que corresponde al ciclo escolar. https://une-enlinea.com/", ["Sí"]],
 ];
 const camposFormulario = [...CAMPOS_INSCRIPCION, ...camposLocales];
 const orden = [
@@ -72,7 +73,7 @@ const adicionales = camposFormulario.filter(([campo]) =>
               data-question-id={id}
             >
               <label for={campo}>
-                {titulo} <span class="pl-[3px] text-[#0059ff]">*</span>
+                {ETIQUETAS_CAMPOS[campo as keyof typeof ETIQUETAS_CAMPOS] ?? titulo} <span class="pl-[3px] text-[#0059ff]">*</span>
               </label>
               <div class="control relative flex items-center text-[#7589ba]">
                 <Icono size={21} aria-hidden="true" />
@@ -90,7 +91,7 @@ const adicionales = camposFormulario.filter(([campo]) =>
                           : "Selecciona tu programa"}
                       </option>
                       {opciones.map((opcion) => (
-                        <option value={opcion}>{campo === "edad" ? `${opcion} años` : opcion}</option>
+                        <option value={opcion}>{etiquetaOpcion(campo, opcion)}</option>
                       ))}
                     </select>
                     <ChevronDown
@@ -215,7 +216,7 @@ const adicionales = camposFormulario.filter(([campo]) =>
                 </h2>
                 <fieldset class="m-0 min-w-0 border-0 p-0">
                   <legend class="mb-4 text-sm leading-[1.55] font-normal whitespace-pre-line text-[#526079]">
-                    {titulo} <span class="pl-[3px] text-[#0059ff]">*</span>
+                    Selecciona todas las opciones que apliquen. <span class="pl-[3px] text-[#0059ff]">*</span>
                   </legend>
                   <div
                     class:list={[
@@ -235,7 +236,7 @@ const adicionales = camposFormulario.filter(([campo]) =>
                           value={opcion}
                           required={tipo === "MULTIPLE_CHOICE" && obligatorio}
                         />
-                        <span>{opcion}</span>
+                        <span>{etiquetaOpcion(campo, opcion)}</span>
                       </label>
                     ))}
                     {permiteOtro && (
@@ -325,6 +326,11 @@ const adicionales = camposFormulario.filter(([campo]) =>
     font-size: clamp(21px, 1.6vw, 28px);
     line-height: 1.35;
     font-weight: 700;
+  }
+  /* En pantallas anchas el formulario no se estira: se centra con un ancho de lectura. */
+  @media (min-width: 1600px) {
+    .inscripcion-form { align-items: center; }
+    .inscripcion-form > * { width: 100%; max-width: 1080px; }
   }
   @media (max-width: 900px) {
     .inscripcion-layout { grid-template-columns: minmax(0, 36%) minmax(0, 1fr); }
@@ -420,6 +426,7 @@ const adicionales = camposFormulario.filter(([campo]) =>
   import {
     validarInscripcion,
   } from "@server/validacion.mjs";
+  import { ETIQUETAS_CAMPOS } from "./etiquetas.mjs";
   const form = document.querySelector<HTMLFormElement>(
     "#formulario-inscripcion",
   )!;
@@ -538,7 +545,11 @@ const adicionales = camposFormulario.filter(([campo]) =>
     const { data, errors } = validarInscripcion(recolectar());
     if (Object.keys(errors).length) {
       status.textContent =
-        "Revisa estos campos: " + Object.keys(errors).join(", ");
+        "Revisa estos campos: " +
+        Object.keys(errors)
+          .map((campo) => ETIQUETAS_CAMPOS[campo as keyof typeof ETIQUETAS_CAMPOS] ?? campo)
+          .join(", ") +
+        ".";
       status.focus();
       return null;
     }
