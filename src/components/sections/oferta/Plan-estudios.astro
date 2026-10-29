@@ -202,9 +202,14 @@ const componentId = `plan-estudios-${Math.random().toString(36).substr(2, 9)}`;
 
       // 2. Cargar el PDF base
       const existingPdfUrl = "/plan_de_estudios.pdf";
-      const existingPdfBytes = await fetch(existingPdfUrl).then((res) =>
-        res.arrayBuffer(),
-      );
+      const fetchBytes = async (url) => {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`Error cargando ${url}: HTTP ${response.status}`);
+        }
+        return response.arrayBuffer();
+      };
+      const existingPdfBytes = await fetchBytes(existingPdfUrl);
       const pdfDoc = await PDFDocument.load(existingPdfBytes);
 
       // --- PASO CRUCIAL: REGISTRAR FONTKIT ---
@@ -212,12 +217,10 @@ const componentId = `plan-estudios-${Math.random().toString(36).substr(2, 9)}`;
       pdfDoc.registerFontkit(fontkit);
 
       // 3. Cargar fuentes
-      const fontBoldBytes = await fetch("/fonts/Gotham/Gotham-BLACK.TTF").then(
-        (res) => res.arrayBuffer(),
-      );
-      const fontRegularBytes = await fetch(
-        "/fonts/Gotham/Gotham-Book.otf",
-      ).then((res) => res.arrayBuffer());
+      const [fontBoldBytes, fontRegularBytes] = await Promise.all([
+        fetchBytes("/fonts/respaldo/Gotham-BLACK.TTF"),
+        fetchBytes("/fonts/respaldo/Gotham-Book.otf"),
+      ]);
 
       // 4. Embeber fuentes (ahora funcionará gracias a fontkit)
       const fontBold = await pdfDoc.embedFont(fontBoldBytes);
