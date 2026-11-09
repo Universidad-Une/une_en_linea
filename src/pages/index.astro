@@ -17,6 +17,7 @@ import ContactSection from "@/components/sections/shared/GeneralCTA.astro";
 import ContactSidebar from "@/components/sections/home/ContactSidebar.astro";
 import AlertaBanner from "@/components/sections/shared/AlertaBanner.astro";
 const pageTitle = "UNE en línea - Más conectados, más cerca";
+const mostrarBanner = false;
 
 const pageDescription =
   "Universidad UNE en línea - 30 años de excelencia educativa";
@@ -25,7 +26,7 @@ const pageDescription =
 <Layout title={pageTitle} description={pageDescription}>
   <SplashScreen alwaysShow={false} />
   <Cookies />
-  <AlertaBanner />
+  {mostrarBanner && <AlertaBanner />}
 
   <main id="mainContent" class="main-content">
     <Hero />
