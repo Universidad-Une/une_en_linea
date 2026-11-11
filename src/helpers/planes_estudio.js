@@ -1286,6 +1286,57 @@ const planesEstudio = {
     ],
   },
 
+  maestriaEnMercadotecniaDigital: {
+    nombre: "Maestría en Mercadotecnia Digital",
+    semestres: [
+      {
+        id: 1,
+        title: "Bloque - 1",
+        subjects: [
+          "Psicología del Consumidor Digital",
+          "Planeación Estratégica en Mercadotecnia Digital",
+          "Estrategias de Lealtad y Programas de Retención",
+        ],
+      },
+      {
+        id: 2,
+        title: "Bloque - 2",
+        subjects: [
+          "Privacidad de Datos y Legislación en Mercadotecnia",
+          "Posicionamiento y Publicidad Digital",
+          "Gestión de Marcas y Medios en Redes Digitales",
+        ],
+      },
+      {
+        id: 3,
+        title: "Bloque - 3",
+        subjects: [
+          "Analítica Web y Optimización de Rendimiento",
+          "Inteligencia de Negocios",
+          "Experiencia de Usuario",
+        ],
+      },
+      {
+        id: 4,
+        title: "Bloque - 4",
+        subjects: [
+          "Metodología de la Investigación",
+          "Liderazgo Estratégico y Gestión de Equipos",
+          "Mercadotecnia en Dispositivos Móviles",
+        ],
+      },
+      {
+        id: 5,
+        title: "Bloque - 5",
+        subjects: [
+          "Diseño y Modelos Digitales de Negocio",
+          "Proyecto Integrador Digital",
+          "Taller de Titulación",
+        ],
+      },
+    ],
+  },
+
   maestriaEnEducacion: {
     nombre: "Maestría en Educación",
     semestres: [

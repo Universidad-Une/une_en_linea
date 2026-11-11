@@ -1,0 +1,75 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { Image } from "astro:assets";
+// Imágenes provisionales hasta recibir las del programa.
+import HeroImg from "@/assets/imagenes/cards_licenciaturas/mercadotecnia-20.webp";
+import PerfilImg from "@/assets/imagenes/cards_licenciaturas/mercadotecnia-21.webp";
+import PropositoCompetencias from "@/components/sections/oferta/Propósito-competencias.astro";
+import Requisitos from "@/components/sections/oferta/Requisitos.astro";
+import PlanEstudios from "@/components/sections/oferta/Plan-estudios.astro";
+import Faq from "@/components/sections/shared/Faq.astro";
+import GeneralCTA from "@/components/sections/shared/GeneralCTA.astro";
+import { ArrowRight } from "@lucide/astro";
+import { obtenerDatos } from "@/helpers/faq.js";
+import { obtenerRequisitos } from "@/helpers/listaRequisitos";
+import { obtenerPlanEstudios } from "@/helpers/planes_estudio.js";
+
+const plan = obtenerPlanEstudios("maestriaEnMercadotecniaDigital");
+---
+
+<Layout title="Maestría en Mercadotecnia Digital en Línea | UNE" description="Estudia Mercadotecnia Digital en UNE: 100% en línea, 5 cuatrimestres y una materia a la vez. Lidera estrategias, marcas y comunicación digital.">
+  <main class="min-h-screen mx-auto py-12 lg:py-20">
+    <section class="max-w-7xl px-4 mx-auto md:py-12">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div class="space-y-8 order-2 lg:order-1">
+          <div class="space-y-4">
+            <h1 class="text-4xl md:text-5xl lg:text-6xl text-gray-800 font-bold leading-tight">Maestría en <span class="text-azul-une block md:inline italic">Mercadotecnia Digital</span></h1>
+            <p class="text-gray-600 text-lg leading-relaxed max-w-lg">Lidera la gestión digital de marcas y la comunicación en mercados globales. Desarrolla estrategias basadas en datos para generar valor y crecimiento sostenible con una perspectiva ética y socialmente responsable.</p>
+          </div>
+          <div class="flex flex-wrap gap-4 text-sm font-medium text-gray-700">
+            { ["100% en línea", "15 materias · 108 créditos", "Una materia a la vez"].map((dato) => <span class="bg-gray-100 px-3 py-1 rounded-lg">{dato}</span>) }
+          </div>
+          <div class="pt-2 flex flex-col gap-4 items-center md:items-start">
+            <a href="/contacto/solicitarinformacion" class="group inline-flex items-center bg-azul-une text-white font-bold py-3 px-8 rounded-full text-lg hover:bg-red-700 transition-colors shadow-lg">QUIERO MÁS INFORMACIÓN<ArrowRight class="h-6 w-6 ml-2 shrink-0" /></a>
+            <a href="/formulario-inscripcion" target="_blank" rel="noopener noreferrer" class="inline-flex items-center bg-rojo-une text-white font-bold py-3 px-8 rounded-full text-lg hover:bg-azul-une transition-colors shadow-lg">INSCRÍBETE<ArrowRight class="h-6 w-6 ml-2" /></a>
+          </div>
+          <nav aria-label="Secciones de la maestría" class="pt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-azul-une font-medium">
+            <a href="#objetivo" class="hover:underline">Perfil de Egreso</a>
+            <a href="#requisitos" class="hover:underline">Admisión Posgrado</a>
+            <a href="#plan-estudios" class="hover:underline">Mapa Curricular</a>
+          </nav>
+        </div>
+        <div class="order-1 lg:order-2">
+          <div class="relative overflow-hidden rounded-xl shadow-2xl"><Image src={HeroImg} alt="Profesional trabajando en estrategias de mercadotecnia" class="w-full h-auto object-cover aspect-[4/3]" /></div>
+        </div>
+      </div>
+    </section>
+
+    <PropositoCompetencias titulo="Estrategia digital para impulsar marcas y negocios" descripcion="Forma una visión estratégica, analítica y ética de la mercadotecnia digital. Desarrolla las competencias para optimizar el posicionamiento de marcas y la comunicación en plataformas en línea, generando valor y crecimiento sostenible." tituloSeccion="¿Qué habilidades potenciarás?" aprendizaje="Diseñar planes de mercadotecnia digital, integrar estrategias de contenido y redes sociales, evaluar campañas mediante métricas y datos, desarrollar planes de comercio electrónico e implementar tecnologías emergentes como la inteligencia artificial." imagenSrc={PerfilImg} imagenAlt="Trabajo colaborativo en mercadotecnia y comunicación" />
+
+    <section class="w-full max-w-6xl mx-auto p-6 bg-white">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+        <div class="space-y-6">
+          <div><h2 class="text-red-600 font-bold text-2xl mb-1">Duración</h2><p class="text-gray-800 text-lg">1 año 8 meses (5 cuatrimestres)</p></div>
+          <div><h2 class="text-red-600 font-bold text-2xl mb-1">Modalidad</h2><p class="text-gray-800 text-lg">100% en línea, en la plataforma UNE en Línea</p></div>
+        </div>
+          <div>
+            <h2 class="text-red-600 font-bold text-2xl mb-3">¿Por qué cursar esta maestría en UNE?</h2>
+            <ul class="list-disc pl-5 space-y-2 text-gray-700">
+              <li>Una materia a la vez, con duración de 5 semanas.</li>
+              <li>Aprendizaje activo y colaborativo, basado en proyectos y competencias.</li>
+              <li>Enfoque en estrategia, contenidos, comercio electrónico y analítica.</li>
+              <li>Formación con ética y responsabilidad social y ambiental.</li>
+            </ul>
+          </div>
+      </div>
+    </section>
+
+    <Requisitos requirements={obtenerRequisitos("maestria")} pdfUrl="/requisitos/maestrias.pdf" />
+
+    <PlanEstudios blocks={plan} tituloPdfEnUnaLinea plantillaPdf="/plan_de_estudios_especial.pdf" />
+
+    <Faq faqs={obtenerDatos("maestria")} />
+    <GeneralCTA title="El siguiente nivel de tu carrera te espera" subtitle="Potencia tu capacidad para dirigir estrategias digitales y construir marcas con responsabilidad social." backgroundImage={true} />
+  </main>
+</Layout>
