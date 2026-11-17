@@ -1,6 +1,7 @@
 ---
 import { buscarOfertas } from "@/helpers/oferta_educativa";
 import { getImageUrl } from "@/helpers/imageManager.js";
+import MercadotecniaImg from "@/assets/imagenes/cards_licenciaturas/mercadotecnia-20.webp";
 
 // Filtramos solo maestrías
 const maestrias = buscarOfertas({ nivel: "maestria" }).map((oferta) => {
@@ -20,6 +21,18 @@ const maestrias = buscarOfertas({ nivel: "maestria" }).map((oferta) => {
         ? "bg-red-600 ring-2 ring-white"
         : "bg-blue-700 ring-2 ring-white",
   };
+});
+
+// Incorporación e imágenes definitivas pendientes de confirmación.
+maestrias.push({
+  id: "maestria_mercadotecnia_digital",
+  nombre: "Maestría en Mercadotecnia Digital",
+  descripcion: "Lidera estrategias digitales, posiciona marcas y analiza datos para impulsar negocios con una visión ética y socialmente responsable.",
+  imagenUrl: MercadotecniaImg.src,
+  incorporacion: "100% en línea",
+  url: "/oferta-academica/maestrias/maestria_mercadotecnia_digital",
+  tieneUDG: false,
+  colorBadge: "bg-blue-700 ring-2 ring-white",
 });
 ---
 
