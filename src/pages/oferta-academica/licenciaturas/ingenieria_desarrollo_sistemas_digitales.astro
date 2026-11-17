@@ -1,0 +1,84 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { Image } from "astro:assets";
+import HeroImg from "@/assets/imagenes/cards_licenciaturas/card-desarollo-sisteams.webp";
+import CarreraImg from "@/assets/imagenes/cards_licenciaturas/desarollo-sisteamas.webp";
+import PropositoCompetencias from "@/components/sections/oferta/Propósito-competencias.astro";
+import Requisitos from "@/components/sections/oferta/Requisitos.astro";
+import PlanEstudios from "@/components/sections/oferta/Plan-estudios.astro";
+import Faq from "@/components/sections/shared/Faq.astro";
+import GeneralCTA from "@/components/sections/shared/GeneralCTA.astro";
+import { ArrowRight } from "@lucide/astro";
+import { obtenerPlanEstudios } from "@/helpers/planes_estudio.js";
+import { obtenerDatos } from "@/helpers/faq.js";
+import { obtenerRequisitos } from "@/helpers/listaRequisitos";
+
+const plan = obtenerPlanEstudios("ingenieriaDesarrolloSistemasDigitales");
+---
+
+<Layout
+  title="Ingeniería en Desarrollo de Sistemas Digitales | UNE"
+  description="Estudia Ingeniería en Desarrollo de Sistemas Digitales en línea y aprende a integrar hardware y software embebido."
+>
+  <main class="min-h-screen mx-auto py-12 lg:py-20">
+    <section class="max-w-7xl px-4 mx-auto md:py-12">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div class="space-y-8 order-2 lg:order-1">
+          <div class="space-y-4">
+            <h1 class="text-4xl md:text-5xl lg:text-6xl text-gray-800 font-bold leading-tight">
+              Ingeniería en Desarrollo de Sistemas Digitales <span class="text-azul-une italic">UNE</span>
+            </h1>
+            <p class="text-gray-600 text-lg leading-relaxed max-w-lg">
+              Diseña e integra hardware y software embebido para crear soluciones digitales eficientes, seguras y confiables.
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-4 text-sm font-medium text-gray-700">
+            <span class="bg-gray-100 px-3 py-1 rounded-lg">Sistemas embebidos</span>
+            <span class="bg-gray-100 px-3 py-1 rounded-lg">Internet de las Cosas</span>
+            <span class="bg-gray-100 px-3 py-1 rounded-lg">Automatización</span>
+          </div>
+          <div class="pt-2 flex flex-col gap-4 items-center md:items-start">
+            <a href="/contacto/solicitarinformacion" class="group inline-flex items-center bg-azul-une text-white font-bold py-3 px-8 rounded-full text-lg hover:bg-red-700 transition-all shadow-lg">
+              INICIAR MI FORMACIÓN <ArrowRight class="h-6 w-6 ml-2" />
+            </a>
+            <a href="/formulario-inscripcion" target="_blank" rel="noopener noreferrer" class="inline-flex items-center bg-rojo-une text-white font-bold py-3 px-8 rounded-full text-lg hover:bg-azul-une transition-all shadow-lg">
+              INSCRÍBETE <ArrowRight class="h-6 w-6 ml-2" />
+            </a>
+          </div>
+          <nav class="pt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-[#4A55A2] font-medium">
+            <a href="#objetivo" class="hover:underline">Perfil de Ingeniería</a>
+            <a href="#requisitos" class="hover:underline">Admisión</a>
+            <a href="#plan-estudios" class="hover:underline">Mapa Curricular</a>
+          </nav>
+        </div>
+        <div class="order-1 lg:order-2">
+          <div class="relative overflow-hidden rounded-xl shadow-2xl">
+            <Image src={HeroImg} alt="Circuito electrónico conectado junto a una computadora" class="w-full h-auto object-cover aspect-[4/3]" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <PropositoCompetencias
+      titulo="Integra el mundo físico y digital"
+      descripcion="El programa combina matemáticas, electrónica, programación, control y conectividad para desarrollar soluciones tecnológicas integrales."
+      tituloSeccion="¿Qué objetivos alcanzarás?"
+      aprendizaje="Aprenderás a diseñar sistemas que integran hardware y software embebido, programar dispositivos, realizar pruebas y desarrollar soluciones para sectores como telecomunicaciones, industria automotriz e Internet de las Cosas."
+      imagenSrc={CarreraImg}
+      imagenAlt="Persona conectando un circuito electrónico junto a una computadora"
+    />
+
+    <section class="w-full max-w-6xl mx-auto p-6" aria-label="Detalles de formación">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div><h2 class="text-red-600 font-bold text-2xl mb-1">Duración</h2><p class="text-gray-800 text-lg">10 cuatrimestres (3 años y 4 meses en trayectoria regular)</p></div>
+        <div><h2 class="text-red-600 font-bold text-2xl mb-1">Modalidad</h2><p class="text-gray-800 text-lg">Totalmente en línea</p></div>
+        <div><h2 class="text-red-600 font-bold text-2xl mb-1">Estructura</h2><p class="text-gray-800 text-lg">30 materias, una a la vez, con duración de 5 semanas cada una.</p></div>
+      </div>
+    </section>
+
+    <Requisitos requirements={obtenerRequisitos()} pdfUrl="/requisitos/licenciatura.pdf" />
+    <PlanEstudios blocks={plan} />
+    <Faq faqs={obtenerDatos("licenciatura")} />
+    <GeneralCTA title="Desarrolla los sistemas digitales del futuro" subtitle="Da el siguiente paso en tu formación tecnológica con UNE en Línea." backgroundImage={true} />
+  </main>
+</Layout>

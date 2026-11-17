@@ -15,13 +15,13 @@ const carreras = buscarOfertas({ nivel: "licenciatura" }).map((oferta) => {
     area: areaNombre,
     imagenNombre,
     imagenUrl: getImageUrl(imagenNombre, "licenciaturas"),
-    incorporacion: incorporacion.nombre,
+    incorporacion: incorporacion?.nombre,
     colorBadge:
-      incorporacion.id === "udg"
+      incorporacion?.id === "udg"
         ? "bg-red-600 ring-2 ring-white"
         : "bg-blue-700 ring-2 ring-white",
     url: programa.url || `/oferta/licenciaturas/${programa.id}`,
-    tieneUDG: incorporacion.id === "udg",
+    tieneUDG: incorporacion?.id === "udg",
   };
 });
 
@@ -131,9 +131,11 @@ const areas = ["Todas", ...new Set(carreras.map((c) => c.area))];
               </p>
 
               <div class="mt-auto space-y-4">
-                <span class="inline-block bg-rojo-une text-white font-bold px-3 py-1 text-[10px] uppercase tracking-wider rounded-md">
-                  {carrera.incorporacion}
-                </span>
+                {carrera.incorporacion && (
+                  <span class="inline-block bg-rojo-une text-white font-bold px-3 py-1 text-[10px] uppercase tracking-wider rounded-md">
+                    {carrera.incorporacion}
+                  </span>
+                )}
 
                 <a
                   href={carrera.url}

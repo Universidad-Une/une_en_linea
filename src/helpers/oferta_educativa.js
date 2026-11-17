@@ -59,6 +59,15 @@ const ofertaEducativa = {
       descripcion:
         "Integra la tecnología y los negocios optimizando flujos de información y gestionando infraestructura tecnológica empresarial.",
     },
+    ingenieria_desarrollo_sistemas_digitales: {
+      id: "ingenieria_desarrollo_sistemas_digitales",
+      nombre: "Ingeniería en Desarrollo de Sistemas Digitales",
+      nivel: "licenciatura",
+      area: "tecnologia_ingenieria",
+      url: "/oferta-academica/licenciaturas/ingenieria_desarrollo_sistemas_digitales",
+      imagen: "card-desarollo-sisteams",
+      descripcion: "Diseña e integra hardware y software embebido para desarrollar sistemas digitales conectados, eficientes y confiables.",
+    },
     ingenieria_industrial: {
       id: "ingenieria_industrial",
       nombre: "Ingeniería Industrial",
@@ -166,6 +175,7 @@ const ofertaEducativa = {
 
   // 3. OFERTAS (Relaciones: Todos con SICYT)
   ofertas: [
+    { programa_id: "ingenieria_desarrollo_sistemas_digitales", incorporacion_id: null, activo: true },
     { programa_id: "administracion", incorporacion_id: "sicyt", activo: true },
     {
       programa_id: "administracion_sistemas_informacion",

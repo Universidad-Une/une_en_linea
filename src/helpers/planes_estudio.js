@@ -1143,6 +1143,102 @@ const planesEstudio = {
     ],
   },
 
+  ingenieriaDesarrolloSistemasDigitales: {
+    nombre: "Licenciatura en Ingeniería en Desarrollo de Sistemas Digitales",
+    semestres: [
+      {
+        id: 1,
+        title: "Bloque - 1",
+        subjects: [
+          "Herramientas Digitales",
+          "Cálculo Diferencial e Integral",
+          "Fundamentos de Programación",
+        ],
+      },
+      {
+        id: 2,
+        title: "Bloque - 2",
+        subjects: [
+          "Geometría Analítica y Álgebra Lineal",
+          "Física para Ingeniería",
+          "Programación Orientada a Objetos",
+        ],
+      },
+      {
+        id: 3,
+        title: "Bloque - 3",
+        subjects: [
+          "Ecuaciones Diferenciales",
+          "Electricidad y Electromagnetismo",
+          "Diseño e Ingeniería de Software",
+        ],
+      },
+      {
+        id: 4,
+        title: "Bloque - 4",
+        subjects: [
+          "Probabilidad y Estadística",
+          "Fundamentos de Electrónica y Lógica Digital",
+          "Matemáticas Discretas",
+        ],
+      },
+      {
+        id: 5,
+        title: "Bloque - 5",
+        subjects: [
+          "Arquitectura de Computadoras",
+          "Microprocesadores y Microcontroladores",
+          "Bases de Datos para Aplicaciones Digitales",
+        ],
+      },
+      {
+        id: 6,
+        title: "Bloque - 6",
+        subjects: [
+          "Arquitectura de Sistemas Digitales y Embebidos",
+          "Redes y Ciberseguridad para Sistemas Embebidos",
+          "Requerimientos y Validación de Software",
+        ],
+      },
+      {
+        id: 7,
+        title: "Bloque - 7",
+        subjects: [
+          "Dispositivos Lógicos Programables y Reconfigurables",
+          "Instrumentación Electrónica y Sistemas de Sensado-Actuación",
+          "Sistemas Operativos y de Tiempo Real",
+        ],
+      },
+      {
+        id: 8,
+        title: "Bloque - 8",
+        subjects: [
+          "Modelado y Control de Sistemas",
+          "Procesamiento de Señales y Sistemas Dinámicos",
+          "Desarrollo en la Nube para Sistemas Inteligentes",
+        ],
+      },
+      {
+        id: 9,
+        title: "Bloque - 9",
+        subjects: [
+          "Metodología e Investigación Aplicada",
+          "Control Digital para Sistemas Embebidos",
+          "Inteligencia Artificial y Procesamiento de Señales para Sistemas Embebidos",
+        ],
+      },
+      {
+        id: 10,
+        title: "Bloque - 10",
+        subjects: [
+          "Taller de Titulación",
+          "Sistemas Ciberfísicos e Internet de las Cosas",
+          "Automatización y Sistemas Productivos Inteligentes",
+        ],
+      },
+    ],
+  },
+
   ingenieriaIndustrial: {
     nombre: "Ingeniería Industrial",
     semestres: [
