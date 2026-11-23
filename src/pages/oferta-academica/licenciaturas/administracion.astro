@@ -154,7 +154,28 @@ const linkPdf = "/requisitos/licenciatura.pdf";
 
     <Requisitos requirements={listaRequisitos} pdfUrl={linkPdf} />
 
-    <Plan_estudios blocks={plan} />
+    <Plan_estudios
+      blocks={plan}
+      subtitle="Plan de estudios 2026 · Modalidad no escolarizada (en línea) · 30 asignaturas obligatorias en 10 cuatrimestres de 16 semanas · 4,800 horas y 300 créditos"
+      tituloPdfEnUnaLinea
+      plantillaPdf="/plan_de_estudios_limpio.pdf"
+    >
+      <div slot="resumen" class="mt-4 space-y-3 text-slate-700">
+        <p>
+          <strong>Carga por asignatura:</strong> 32 horas bajo conducción docente, 128 horas de estudio independiente y 10 créditos.
+        </p>
+        <p>
+          <strong>Carga total:</strong> 960 horas bajo conducción docente y 3,840 horas de estudio independiente.
+        </p>
+        <p class="font-semibold">Áreas de conocimiento</p>
+        <ul class="list-disc pl-5 space-y-1">
+          <li>Gestión y Estrategia Organizacional: 16 asignaturas</li>
+          <li>Finanzas y Contabilidad: 6 asignaturas</li>
+          <li>Ciencias Exactas: 3 asignaturas</li>
+          <li>Ciencias Sociales: 5 asignaturas</li>
+        </ul>
+      </div>
+    </Plan_estudios>
 
     <Faq faqs={infoActual} />
 

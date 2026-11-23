@@ -96,195 +96,103 @@ const planesEstudio = {
   },
 
   administracion: {
-    nombre: "Administración",
-    semestres: [
-      {
-        id: 1,
-        title: "Bloque - 1",
-        subjects: [
-          "Estrategias de aprendizaje a distancia",
-          "Fundamentos de contabilidad",
-          "Fundamentos de mercadotecnia",
-        ],
-      },
-      {
-        id: 2,
-        title: "Bloque - 2",
-        subjects: [
-          "Redacción profesional",
-          "Fundamentos de administración",
-          "Sistemas de información en los negocios",
-        ],
-      },
-      {
-        id: 3,
-        title: "Bloque - 3",
-        subjects: [
-          "Comunicación en las organizaciones",
-          "Matemáticas financieras",
-          "Administración de recursos humanos",
-        ],
-      },
-      {
-        id: 4,
-        title: "Bloque - 4",
-        subjects: [
-          "Estadística para los negocios",
-          "Derecho empresarial",
-          "Fundamentos de economía",
-        ],
-      },
-      {
-        id: 5,
-        title: "Bloque - 5",
-        subjects: [
-          "Negociación",
-          "Finanzas para los negocios",
-          "Administración estratégica",
-        ],
-      },
-      {
-        id: 6,
-        title: "Bloque - 6",
-        subjects: [
-          "Contabilidad administrativa y de costos",
-          "Operaciones en la empresa",
-          "Desarrollo organizacional",
-        ],
-      },
-      {
-        id: 7,
-        title: "Bloque - 7",
-        subjects: [
-          "Plan de negocios",
-          "Administración de pequeñas empresas",
-          "Cadena de suministros",
-        ],
-      },
-      {
-        id: 8,
-        title: "Bloque - 8",
-        subjects: [
-          "Competitividad empresarial",
-          "Simulación de negocios",
-          "Gestión de la innovación",
-        ],
-      },
-      {
-        id: 9,
-        title: "Bloque - 9",
-        subjects: [
-          "Ética y valores en la empresa",
-          "Administración de proyectos",
-          "Teoría de la comunicación",
-        ],
-      },
-      {
-        id: 10,
-        title: "Bloque - 10",
-        subjects: [
-          "Gestión del capital humano",
-          "Formulación y evaluación de proyectos de inversión",
-          "Administración de riesgos en proyectos",
-        ],
-      },
-    ],
-  },
-
-  licenciaturaEnAdministracion: {
     nombre: "Licenciatura en Administración",
     semestres: [
       {
         id: 1,
         title: "Bloque - 1",
         subjects: [
-          "Estrategias de aprendizaje a distancia",
-          "Fundamentos de contabilidad",
-          "Fundamentos de mercadotecnia",
+          "Fundamentos de la Administración I",
+          "Contabilidad Financiera I",
+          "Matemáticas Financieras I",
         ],
       },
       {
         id: 2,
         title: "Bloque - 2",
         subjects: [
-          "Redacción profesional",
-          "Fundamentos de administración",
-          "Sistemas de información en los negocios",
+          "Fundamentos de la Administración II",
+          "Contabilidad Financiera II",
+          "Matemáticas Financieras II",
         ],
       },
       {
         id: 3,
         title: "Bloque - 3",
         subjects: [
-          "Comunicación en las organizaciones",
-          "Matemáticas financieras",
-          "Administración de recursos humanos",
+          "Metodología e Investigación Aplicada",
+          "Fundamentos de Mercadotecnia",
+          "Estadística Descriptiva",
         ],
       },
       {
         id: 4,
         title: "Bloque - 4",
         subjects: [
-          "Estadística para los negocios",
-          "Derecho empresarial",
-          "Fundamentos de economía",
+          "Economía I",
+          "Administración Financiera",
+          "Administración Estratégica",
         ],
       },
       {
         id: 5,
         title: "Bloque - 5",
         subjects: [
-          "Negociación",
-          "Finanzas para los negocios",
-          "Administración estratégica",
+          "Economía II",
+          "Gestión del Talento y Desarrollo Humano",
+          "Comportamiento Organizacional",
         ],
       },
       {
         id: 6,
         title: "Bloque - 6",
         subjects: [
-          "Contabilidad administrativa y de costos",
-          "Operaciones en la empresa",
-          "Desarrollo organizacional",
+          "Modelo de Negocios en Economías Digitales",
+          "Administración de Riesgos Empresariales",
+          "Administración de los Sistemas Públicos y Privados",
         ],
       },
       {
         id: 7,
         title: "Bloque - 7",
         subjects: [
-          "Plan de negocios",
-          "Administración de pequeñas empresas",
-          "Cadena de suministros",
+          "Derecho Fiscal",
+          "Administración de Operaciones",
+          "Diseño Organizacional",
         ],
       },
       {
         id: 8,
         title: "Bloque - 8",
         subjects: [
-          "Competitividad empresarial",
-          "Simulación de negocios",
-          "Gestión de la innovación",
+          "Contexto Sociocultural y Económico de los Mercados",
+          "Calidad Total y Productividad",
+          "Auditoría Administrativa",
         ],
       },
       {
         id: 9,
         title: "Bloque - 9",
         subjects: [
-          "Ética y valores en la empresa",
-          "Administración de proyectos",
-          "Teoría de la comunicación",
+          "Política Económica Internacional",
+          "Administración de Cadenas y Suministros",
+          "Evaluación de Proyectos de Inversión",
         ],
       },
       {
         id: 10,
         title: "Bloque - 10",
         subjects: [
-          "Gestión del capital humano",
-          "Formulación y evaluación de proyectos de inversión",
-          "Administración de riesgos en proyectos",
+          "Taller de Titulación",
+          "Fiscalización y Rendición de Cuentas",
+          "Sueldos, Salarios y Contribuciones al Seguro Social",
         ],
       },
     ],
+  },
+
+  get licenciaturaEnAdministracion() {
+    return this.administracion;
   },
 
   licenciaturaEnAdministracionDeSistemasDeLaInformacion: {

@@ -61,6 +61,7 @@ const componentId = `plan-estudios-${Math.random().toString(36).substr(2, 9)}`;
     <p class="text-lg font-semibold text-slate-900">
       {subtitle}
     </p>
+    <slot name="resumen" />
   </div>
 
   <div class="relative">
