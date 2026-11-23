@@ -14,7 +14,6 @@ interface PlanStructure {
 interface Props {
   mainTitle?: string;
   subtitle?: string;
-  subtituloWeb?: string;
   blocks: Block[] | PlanStructure;
   ctaText?: string;
   ctaLink?: string;
@@ -25,7 +24,6 @@ interface Props {
 const {
   mainTitle,
   subtitle = "Descubre el plan de estudios de tu siguiente etapa académica",
-  subtituloWeb = subtitle,
   blocks,
   ctaText = "Descargar plan de estudios",
   ctaLink = "#",
@@ -61,9 +59,8 @@ const componentId = `plan-estudios-${Math.random().toString(36).substr(2, 9)}`;
       {displayTitle}
     </h2>
     <p class="text-lg font-semibold text-slate-900">
-      {subtituloWeb}
+      {subtitle}
     </p>
-    <slot name="resumen" />
   </div>
 
   <div class="relative">
