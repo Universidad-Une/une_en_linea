@@ -28,7 +28,7 @@ const {
   ctaText = "Descargar plan de estudios",
   ctaLink = "#",
   tituloPdfEnUnaLinea = false,
-  plantillaPdf = "/plan_de_estudios.pdf",
+  plantillaPdf = "/plan_de_estudios_limpio.pdf",
 } = Astro.props;
 
 // Normalizamos la estructura
@@ -263,7 +263,7 @@ const componentId = `plan-estudios-${Math.random().toString(36).substr(2, 9)}`;
         throw new Error("El título excede el espacio disponible en el PDF.");
       }
       const titleLineHeight = titleSize * 1.1;
-      const titleTop = titleArea.y + (titleArea.height - titleLines.length * titleLineHeight) / 2;
+      const titleTop = titleArea.y + (titleArea.height - titleLines.length * titleLineHeight) / 2 - 18;
       titleLines.forEach((line, index) => {
         const lineWidth = fontBold.widthOfTextAtSize(line, px(titleSize)) / scale;
         drawTextAt(line, titleArea.x + (titleArea.width - lineWidth) / 2,
