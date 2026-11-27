@@ -85,7 +85,7 @@ const { title = "Estas son las preguntas frecuentes", faqs } = Astro.props;
           content.style.maxHeight = content.scrollHeight + "px";
           icon.style.transform = "rotate(45deg)"; // Convierte el + en x
         } else {
-          content.style.maxHeight = null; // Cierra
+          content.style.maxHeight = "0"; // Cierra
           icon.style.transform = "rotate(0deg)"; // Regresa a +
         }
       });

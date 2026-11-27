@@ -155,7 +155,7 @@ const ofertaAcademica = {
   ],
 };
 
-function getGridCols(dropdownClass) {
+function getGridCols(dropdownClass: string) {
   switch (dropdownClass) {
     case "admisiones-dropdown":
       return "grid-cols-4";
@@ -361,8 +361,8 @@ function getGridCols(dropdownClass) {
                   class="flex items-center"
                 >
                   <Image
-                    src={link.img}
-                    alt={link.alt}
+                    src={link.img!}
+                    alt={link.alt ?? ""}
                     class="h-10 w-auto"
                     loading="lazy"
                     decoding="async"

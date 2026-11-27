@@ -168,7 +168,7 @@ const content = {
 
 <script>
   // Función para animar contador con velocidad decreciente
-  function animateCounter(element, target, duration = 2000) {
+  function animateCounter(element: HTMLElement, target: number, duration = 2000) {
     const start = 0;
     const prefix = element.dataset.prefix || "";
     const suffix = element.dataset.suffix || "";
@@ -182,7 +182,7 @@ const content = {
     // Agregar clase de animación
     element.classList.add("counting");
 
-    function updateCounter(currentTime) {
+    function updateCounter(currentTime: number) {
       const elapsed = currentTime - startTime;
       const progress = Math.min(elapsed / duration, 1);
 
@@ -223,7 +223,7 @@ const content = {
 
         // Animar contadores
         if (element.classList.contains("counter")) {
-          const target = parseInt(element.dataset.target);
+          const target = parseInt((element as HTMLElement).dataset.target ?? "0");
           // Diferentes duraciones para crear efecto escalonado
           let duration;
           if (target >= 1000) {
@@ -240,7 +240,7 @@ const content = {
             200;
 
           setTimeout(() => {
-            animateCounter(element, target, duration);
+            animateCounter(element as HTMLElement, target, duration);
           }, delay);
         }
 

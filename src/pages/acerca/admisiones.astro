@@ -648,8 +648,8 @@ import ContactSection from "@/components/sections/shared/GeneralCTA.astro";
     // Escucha de tabs
     const tabButtons = document.querySelectorAll(".tab-button");
     tabButtons.forEach((button) => {
-      button.addEventListener("click", function () {
-        const tabName = (this as HTMLElement).getAttribute("data-tab");
+      button.addEventListener("click", (event) => {
+        const tabName = (event.currentTarget as HTMLElement).getAttribute("data-tab");
         if (tabName) {
           setActiveTab(tabName);
           renderRequirements(tabName);

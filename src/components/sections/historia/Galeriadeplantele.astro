@@ -218,9 +218,9 @@ for (let i = 7; i < planteles.length; i += 4) {
               };
               tempImg.onerror = () => {
                 img.removeAttribute("data-loading");
-                console.warn("Error loading image:", img.src);
+                console.warn("Error loading image:", (img as HTMLImageElement).src);
               };
-              tempImg.src = img.src;
+              tempImg.src = (img as HTMLImageElement).src;
 
               observer.unobserve(img);
             }

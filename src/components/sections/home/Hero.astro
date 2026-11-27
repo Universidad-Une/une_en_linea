@@ -377,14 +377,14 @@ const slides = [
       );
       this.progressLines.forEach((line) => {
         line.addEventListener("click", () => {
-          const index = parseInt(line.dataset.slideIndex);
+          const index = parseInt((line as HTMLElement).dataset.slideIndex ?? "0");
           this.goToSlide(index);
         });
       });
       this.startAutoplay();
     }
 
-    goToSlide(index) {
+    goToSlide(index: number) {
       if (index === this.currentIndex) return;
       this.slides[this.currentIndex]?.classList.replace(
         "opacity-100",
@@ -398,7 +398,7 @@ const slides = [
       if (!this.isPaused) this.startAutoplay();
     }
 
-    updateProgressBars(activeIndex) {
+    updateProgressBars(activeIndex: number) {
       this.progressLines.forEach((line, index) => {
         line.classList.remove("is-active", "is-completed", "is-paused");
         line.removeAttribute("aria-current");
@@ -407,8 +407,8 @@ const slides = [
           line.classList.add("is-active");
           line.setAttribute("aria-current", "true");
           if (this.isPaused) line.classList.add("is-paused");
-          const duration = parseInt(line.dataset.duration) || 10000;
-          line.style.setProperty("--slide-duration", `${duration / 1000}s`);
+          const duration = parseInt((line as HTMLElement).dataset.duration ?? "0") || 10000;
+          (line as HTMLElement).style.setProperty("--slide-duration", `${duration / 1000}s`);
         }
       });
     }
@@ -417,7 +417,7 @@ const slides = [
       this.clearAutoplay();
       if (this.isPaused) return;
       const duration =
-        parseInt(this.progressLines[this.currentIndex]?.dataset.duration) ||
+        parseInt(((this.progressLines[this.currentIndex] as HTMLElement)?.dataset.duration) ?? "0") ||
         10000;
       this.autoplayTimer = setTimeout(() => {
         this.goToSlide((this.currentIndex + 1) % this.slides.length);

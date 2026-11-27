@@ -67,7 +67,7 @@ const fullOgImage = `${Astro.url.origin}${ogImage}`;
 
     {/* Meta tags personalizados */}
     {
-      customMeta.map((meta) => (
+      customMeta.map((meta: { name: string; content: string; property?: string }) => (
         <meta
           name={meta.name}
           content={meta.content}
@@ -158,7 +158,7 @@ const fullOgImage = `${Astro.url.origin}${ogImage}`;
     <!--  Google Tag Manager (noscript) -->
 
     <!--  Clarity Analytics -->
-    <Clarity projectId={projectId} />
+    {import.meta.env.PROD && <Clarity projectId={projectId} />}
 
     <Header />
 

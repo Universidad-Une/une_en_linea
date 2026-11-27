@@ -354,8 +354,8 @@ import {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
-        entry.target.style.opacity = "1";
-        entry.target.style.transform = "translateY(0) scale(1)";
+        (entry.target as HTMLElement).style.opacity = "1";
+        (entry.target as HTMLElement).style.transform = "translateY(0) scale(1)";
       }
     });
   }, observerOptions);
@@ -365,11 +365,12 @@ import {
     const timelineItems = document.querySelectorAll(".timeline-item");
 
     timelineItems.forEach((item, index) => {
+      const el = item as HTMLElement;
       // Estado inicial
-      item.style.opacity = "0";
-      item.style.transform = "translateY(30px) scale(0.9)";
-      item.style.transition = "all 0.8s cubic-bezier(0.4, 0, 0.2, 1)";
-      item.style.transitionDelay = `${index * 0.15}s`;
+      el.style.opacity = "0";
+      el.style.transform = "translateY(30px) scale(0.9)";
+      el.style.transition = "all 0.8s cubic-bezier(0.4, 0, 0.2, 1)";
+      el.style.transitionDelay = `${index * 0.15}s`;
 
       // Observar elemento
       observer.observe(item);
@@ -377,7 +378,7 @@ import {
   });
 
   // Scroll suave para timeline horizontal
-  const timelineContainer = document.querySelector(".overflow-x-auto");
+  const timelineContainer = document.querySelector(".overflow-x-auto") as HTMLElement;
   if (timelineContainer) {
     timelineContainer.style.scrollBehavior = "smooth";
   }

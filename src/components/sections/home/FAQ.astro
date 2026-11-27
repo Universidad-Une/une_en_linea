@@ -247,11 +247,11 @@
       ],
     };
 
-    let currentOpenQuestion = null;
-    const DEFAULT_CATEGORY = "proceso-inscripcion";
+    let currentOpenQuestion: HTMLElement | null = null;
+    const DEFAULT_CATEGORY = "bachillerato";
 
-    function renderQuestions(category) {
-      const container = document.getElementById("faq-content");
+    function renderQuestions(category: keyof typeof faqData) {
+      const container = document.getElementById("faq-content")!;
       const questions = faqData[category];
 
       if (!questions) {
@@ -262,7 +262,7 @@
 
       container.innerHTML = questions
         .map(
-          (faq, index) => `
+          (faq: { question: string; answer: string }, index: number) => `
         <div class="faq-item border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
           <button 
             class="faq-question w-full px-6 py-5 text-left flex justify-between items-center hover:bg-gray-50 transition-all duration-200 group"
@@ -291,15 +291,15 @@
       // Añadir event listeners optimizados
       const questionButtons = container.querySelectorAll(".faq-question");
       questionButtons.forEach((button) => {
-        button.addEventListener("click", handleQuestionClick);
+        button.addEventListener("click", (e) => handleQuestionClick(e as MouseEvent));
       });
     }
 
-    function handleQuestionClick(event) {
-      const button = event.currentTarget;
+    function handleQuestionClick(event: MouseEvent) {
+      const button = event.currentTarget as HTMLElement;
       const index = button.dataset.index;
-      const answer = button.nextElementSibling;
-      const icon = button.querySelector(".faq-icon");
+      const answer = button.nextElementSibling as HTMLElement;
+      const icon = button.querySelector(".faq-icon") as SVGElement | null;
       const isExpanded = button.getAttribute("aria-expanded") === "true";
 
       // Cerrar pregunta anterior si hay una abierta
@@ -316,14 +316,14 @@
       }
     }
 
-    function openQuestion(button, answer, icon) {
+    function openQuestion(button: HTMLElement, answer: HTMLElement, icon: SVGElement | null) {
       button.setAttribute("aria-expanded", "true");
       button.classList.add("bg-azul-une/10");
-      icon.style.transform = "rotate(180deg)";
+      icon!.style.transform = "rotate(180deg)";
 
       // Calcular altura real del contenido
       const content = answer.querySelector("div");
-      const height = content.offsetHeight;
+      const height = content?.offsetHeight ?? 0;
       answer.style.maxHeight = height + "px";
 
       // Scroll suave hacia la pregunta si está fuera de vista
@@ -341,17 +341,17 @@
       }, 150);
     }
 
-    function closeQuestion(button) {
-      const answer = button.nextElementSibling;
-      const icon = button.querySelector(".faq-icon");
+    function closeQuestion(button: HTMLElement) {
+      const answer = button.nextElementSibling as HTMLElement;
+      const icon = button.querySelector(".faq-icon") as SVGElement | null;
 
       button.setAttribute("aria-expanded", "false");
       button.classList.remove("bg-azul-une/10");
-      icon.style.transform = "rotate(0deg)";
+      icon!.style.transform = "rotate(0deg)";
       answer.style.maxHeight = "0";
     }
 
-    function switchTab(newCategory, clickedButton) {
+    function switchTab(newCategory: keyof typeof faqData, clickedButton: HTMLElement) {
       // Actualizar estilos de tabs - asegurar que se reseteen todas las clases
       document.querySelectorAll(".tab-button").forEach((btn) => {
         btn.classList.remove(
@@ -383,7 +383,7 @@
       }
 
       // Renderizar nuevas preguntas con pequeña animación
-      const container = document.getElementById("faq-content");
+      const container = document.getElementById("faq-content")!;
       container.style.opacity = "0.5";
 
       setTimeout(() => {
@@ -422,23 +422,23 @@
 
       // Event listeners para tabs
       document.querySelectorAll(".tab-button").forEach((button) => {
-        button.addEventListener("click", function () {
-          const category = this.dataset.tab;
-          switchTab(category, this);
+        button.addEventListener("click", (event) => {
+          const category = (event.currentTarget as HTMLElement).dataset.tab as keyof typeof faqData;
+          switchTab(category, event.currentTarget as HTMLElement);
         });
       });
 
       // Cerrar preguntas al hacer clic fuera
-      document.addEventListener("click", function (event) {
-        const faqSection = document.getElementById("faqSection");
-        if (!faqSection.contains(event.target) && currentOpenQuestion) {
+      document.addEventListener("click", function (event: MouseEvent) {
+        const faqSection = document.getElementById("faqSection")!;
+        if (!faqSection.contains(event.target as Node) && currentOpenQuestion) {
           closeQuestion(currentOpenQuestion);
           currentOpenQuestion = null;
         }
       });
 
       // Manejar tecla Escape para cerrar preguntas
-      document.addEventListener("keydown", function (event) {
+      document.addEventListener("keydown", function (event: KeyboardEvent) {
         if (event.key === "Escape" && currentOpenQuestion) {
           closeQuestion(currentOpenQuestion);
           currentOpenQuestion = null;

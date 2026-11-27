@@ -460,7 +460,7 @@ const claseSelect = `${claseCampo} appearance-none cursor-pointer [&>option]:tex
 
       const { errors } = validarInscripcion(data);
       if (Object.keys(errors).length) {
-        showMessage(`Revisa estos campos: ${camposConError(errors)}.`, "error");
+        showMessage(`Revisa estos campos: ${camposConError(errors as Record<string, string>)}.`, "error");
         return;
       }
 

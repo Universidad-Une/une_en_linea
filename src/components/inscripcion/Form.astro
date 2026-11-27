@@ -40,7 +40,7 @@ const campos = orden.map((nombre) =>
   camposFormulario.find(([campo]) => campo === nombre)!,
 );
 const adicionales = camposFormulario.filter(([campo]) =>
-  ["mediosSeleccionados", "compromiso"].includes(campo),
+   ["mediosSeleccionados", "compromiso"].includes(campo as string),
 );
 ---
 
@@ -72,25 +72,25 @@ const adicionales = camposFormulario.filter(([campo]) =>
               data-type={tipo}
               data-question-id={id}
             >
-              <label for={campo}>
+              <label for={campo as string}>
                 {ETIQUETAS_CAMPOS[campo as keyof typeof ETIQUETAS_CAMPOS] ?? titulo} <span class="pl-[3px] text-[#0059ff]">*</span>
               </label>
               <div class="control relative flex items-center text-[#7589ba]">
                 <Icono size={21} aria-hidden="true" />
                 {campo === "programaAcademico" || campo === "edad" ? (
                   <>
-                    <select
-                      id={campo}
-                      name={campo}
-                      required={obligatorio}
-                      aria-describedby={campo + "-error"}
+                      <select
+                      id={campo as string}
+                      name={campo as string}
+                      required={obligatorio as boolean}
+                      aria-describedby={campo as string + "-error"}
                     >
                       <option value="" disabled selected>
                         {campo === "edad"
                           ? "Selecciona un rango de edad"
                           : "Selecciona tu programa"}
                       </option>
-                      {opciones.map((opcion) => (
+                      {(opciones as (string | number)[]).map((opcion: string | number) => (
                         <option value={opcion}>{etiquetaOpcion(campo, opcion)}</option>
                       ))}
                     </select>
@@ -101,10 +101,10 @@ const adicionales = camposFormulario.filter(([campo]) =>
                     />
                   </>
                 ) : (
-                  <input
-                    id={campo}
-                    name={campo}
-                    aria-describedby={campo + "-error"}
+                    <input
+                    id={campo as string}
+                    name={campo as string}
+                    aria-describedby={campo as string + "-error"}
                     type={
                       campo === "correo"
                         ? "email"
@@ -140,7 +140,7 @@ const adicionales = camposFormulario.filter(([campo]) =>
                         : undefined
                     }
                     maxlength={campo === "telefonoContacto" ? 10 : 500}
-                    required={obligatorio}
+                    required={obligatorio as boolean}
                   />
                 )}
               </div>
@@ -179,7 +179,7 @@ const adicionales = camposFormulario.filter(([campo]) =>
                     name="compromiso"
                     type="checkbox"
                     value="Sí"
-                    required={obligatorio}
+                    required={obligatorio as boolean}
                     aria-labelledby="compromiso-heading"
                   />
                   <span id="compromiso-heading">
@@ -224,17 +224,17 @@ const adicionales = camposFormulario.filter(([campo]) =>
                       { "media-choices": campo === "mediosSeleccionados" },
                     ]}
                   >
-                    {opciones.map((opcion, index) => (
+                    {(opciones as (string | number)[]).map((opcion: string | number, index: number) => (
                       <label
                         class="choice inline-flex min-h-8 cursor-pointer items-center gap-2 text-[13px] font-medium"
-                        for={campo + "-" + index}
+                        for={campo as string + "-" + index}
                       >
                         <input
-                          id={campo + "-" + index}
-                          name={campo}
+                          id={campo as string + "-" + index}
+                          name={campo as string}
                           type={tipo === "CHECKBOX" ? "checkbox" : "radio"}
                           value={opcion}
-                          required={tipo === "MULTIPLE_CHOICE" && obligatorio}
+                          required={tipo === "MULTIPLE_CHOICE" && (obligatorio as boolean)}
                         />
                         <span>{etiquetaOpcion(campo, opcion)}</span>
                       </label>
@@ -242,7 +242,7 @@ const adicionales = camposFormulario.filter(([campo]) =>
                     {permiteOtro && (
                       <div class="flex min-w-0 gap-2">
                         <label class="choice inline-flex cursor-pointer items-center gap-2" for="medios-otro">
-                          <input id="medios-otro" name={campo} type="checkbox" value="__otro__" data-other-choice />
+                          <input id="medios-otro" name={campo as string} type="checkbox" value="__otro__" data-other-choice />
                           <span>Otro</span>
                         </label>
                         <input type="text" data-other-text aria-label="Otro medio por el que nos conociste" placeholder="Especifica" maxlength="500" disabled />
@@ -462,7 +462,7 @@ const adicionales = camposFormulario.filter(([campo]) =>
     control.setCustomValidity("");
     const { errors } = validarInscripcion(recolectar());
     const invalido =
-      !control.validity.valid || Boolean(errors[grupo.dataset.field!]);
+      !control.validity.valid || Boolean((errors as any)[grupo.dataset.field!]);
     const texto = invalido
       ? mensajes[grupo.dataset.field!] || "Revisa este campo."
       : "";
