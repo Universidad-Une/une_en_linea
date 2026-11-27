@@ -1,6 +1,6 @@
 # 🎓 Universidad UNE En Línea
 
-Sitio web de **Universidad UNE En Línea**: un sitio estático en [Astro 5](https://astro.build/)
+Sitio web de **Universidad UNE En Línea**: un sitio estático en [Astro 7](https://astro.build/)
 con Tailwind CSS v4, más un pequeño backend en Node que recibe las solicitudes de
 inscripción y las envía a Google Forms.
 
@@ -29,6 +29,8 @@ Alias de importación (en `tsconfig.json`): `@/` → `src/`, `@components`, `@la
 
 ## Desarrollo local
 
+Usa Node.js **22.23.4 o posterior** en una versión compatible con `better-sqlite3` (por ejemplo, Node 22 o 24 LTS).
+
 ```bash
 npm install
 cp .env.example .env      # completar URL y secreto de Apps Script
@@ -55,6 +57,7 @@ Sin worker las solicitudes se guardan pero no llegan a Google.
 | :-- | :-- |
 | `npm run dev` | Sitio en desarrollo con recarga en caliente |
 | `npm run build` | Compila el sitio a `dist/` |
+| `npm run astro -- check` | Verifica los tipos y las plantillas de Astro |
 | `npm run api` / `npm start` | API de inscripción |
 | `npm run worker` | Envíos y reintentos a Google |
 | `npm run db:init` | Crea la base SQLite |

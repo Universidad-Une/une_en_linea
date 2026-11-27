@@ -3,7 +3,7 @@
   "type": "module",
   "version": "1.0.0",
   "scripts": {
-    "dev": "node --env-file-if-exists=.env ./node_modules/astro/astro.js dev",
+    "dev": "node --env-file-if-exists=.env ./node_modules/astro/bin/astro.mjs dev",
     "build": "astro build",
     "start": "npm run api",
     "api": "node --env-file-if-exists=.env server/api.mjs",
@@ -15,28 +15,28 @@
     "test": "node --test server/test/*.test.mjs"
   },
   "dependencies": {
-    "@astrojs/sitemap": "^3.7.0",
-    "@lucide/astro": "^0.555.0",
+    "@astrojs/sitemap": "^3.7.6",
+    "@lucide/astro": "^1.81.0",
     "@splidejs/splide": "^4.1.4",
     "@splidejs/splide-extension-auto-scroll": "^0.5.3",
     "@splidejs/splide-extension-intersection": "^0.2.0",
-    "@tailwindcss/vite": "^4.1.17",
+    "@tailwindcss/vite": "^4.3.5",
     "@tsparticles/engine": "^3.9.1",
     "@tsparticles/slim": "^3.9.1",
-    "astro": "5.17.1",
+    "astro": "7.4.13",
     "better-sqlite3": "^12.11.1",
     "lucide-astro": "^0.555.0",
     "splide": "0.0.1-security",
-    "tailwindcss": "^4.1.17"
+    "tailwindcss": "^4.3.5"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.12",
     "@types/better-sqlite3": "^9.6.0",
-    "@types/node": "^25.0.10"
+    "@types/node": "^25.0.10",
+    "typescript": "^6.0.3"
   },
   "allowScripts": {
     "@tsparticles/engine@3.9.1": true,
-    "esbuild@0.25.12": true,
-    "esbuild@0.27.2": true,
-    "sharp@0.34.5": true
+    "better-sqlite3@12.11.1": true
   }
 }

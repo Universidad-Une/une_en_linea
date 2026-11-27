@@ -17,6 +17,7 @@ const noIndexar = SITE_NOINDEX === "true";
 export default defineConfig({
   site: "https://une-enlinea.com",
   output: "static",
+  compressHTML: true,
   env: {
     schema: {
       SITE_NOINDEX: envField.boolean({ context: "server", access: "public", default: false }),

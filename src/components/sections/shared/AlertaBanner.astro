@@ -133,27 +133,32 @@ const {
 </div>
 
 <script define:vars={{ storageKey, delay }}>
-  const wrapper = document.getElementById("alerta-wrapper");
-  const banner = document.getElementById("alerta-banner");
-  const closeBtn = document.getElementById("alerta-close");
+  function iniciarAlerta() {
+    const wrapper = document.getElementById("alerta-wrapper");
+    const banner = document.getElementById("alerta-banner");
+    const closeBtn = document.getElementById("alerta-close");
 
-  if (!wrapper || !banner) return;
+    if (!wrapper || !banner) return;
 
-  if (sessionStorage.getItem(storageKey)) {
-    wrapper.remove();
-  } else {
+    if (sessionStorage.getItem(storageKey)) {
+      wrapper.remove();
+      return;
+    }
+
     setTimeout(() => {
       banner.style.opacity = "1";
       banner.style.transform = "translateY(0) scale(1)";
     }, delay * 1000);
+
+    closeBtn?.addEventListener("click", () => {
+      banner.style.opacity = "0";
+      banner.style.transform = "translateY(16px) scale(0.95)";
+      setTimeout(() => {
+        wrapper.remove();
+        sessionStorage.setItem(storageKey, "1");
+      }, 400);
+    });
   }
 
-  closeBtn?.addEventListener("click", () => {
-    banner.style.opacity = "0";
-    banner.style.transform = "translateY(16px) scale(0.95)";
-    setTimeout(() => {
-      wrapper.remove();
-      sessionStorage.setItem(storageKey, "1");
-    }, 400);
-  });
+  iniciarAlerta();
 </script>

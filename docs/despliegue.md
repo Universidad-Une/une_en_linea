@@ -12,7 +12,8 @@ En producción hay tres piezas:
 
 1. Desplegar `dist/`, `server/`, `deploy/`, `package.json` y `package-lock.json`.
 2. Ejecutar `npm ci` en el VPS. No copiar `node_modules` desde Windows: `better-sqlite3`
-   es un módulo nativo. Requiere Node 22.12 o superior.
+   es un módulo nativo. Para compilar con Astro 7, usa Node **22.23.4 o posterior**
+   en una versión compatible con `better-sqlite3` (por ejemplo, Node 22 o 24 LTS).
 3. Crear `.env` en la raíz con las variables de [`.env.example`](../.env.example). En el VPS:
    `SQLITE_DB_PATH` absoluta y `INSCRIPCION_TRUST_PROXY=true`.
 4. `npm run db:init`. Crea la base; si ya existe con el esquema actual no hace nada, y

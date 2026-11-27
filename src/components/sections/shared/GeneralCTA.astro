@@ -56,7 +56,6 @@ const claseSelect = `${claseCampo} appearance-none cursor-pointer [&>option]:tex
 
 <section id="contact-shared" class={`relative py-12 sm:py-16 px-4 min-h-[400px] ${className}`}>
   {backgroundImage ? (
-    <!-- Background Image -->
     <div class="absolute inset-0">
       <Image
         src={Instalaciones}
@@ -67,7 +66,6 @@ const claseSelect = `${claseCampo} appearance-none cursor-pointer [&>option]:tex
       <div class="absolute inset-0 bg-black/40"></div>
     </div>
   ) : (
-    <!-- Gradient Background -->
     <div class="absolute inset-0 bg-gradient-to-br from-[#001A71] to-[#0A2DAA]">
     </div>
   )}
@@ -143,7 +141,7 @@ const claseSelect = `${claseCampo} appearance-none cursor-pointer [&>option]:tex
               }
             </select>
             <ChevronDown
-              className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-white/80 pointer-events-none"
+              class="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-white/80 pointer-events-none"
             />
           </div>
 
@@ -179,7 +177,7 @@ const claseSelect = `${claseCampo} appearance-none cursor-pointer [&>option]:tex
               {edades.map((opcion) => <option value={opcion}>{etiquetaOpcion("edad", opcion)}</option>)}
             </select>
             <ChevronDown
-              className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-white/80 pointer-events-none"
+              class="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-white/80 pointer-events-none"
             />
           </div>
 
