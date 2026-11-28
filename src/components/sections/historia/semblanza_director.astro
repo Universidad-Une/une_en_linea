@@ -1,0 +1,92 @@
+---
+import { Image } from "astro:assets";
+import retrato from "../../../assets/imagenes/director_campus_virtual.webp";
+
+const cargo = "Director de UNE en Línea";
+---
+
+<section
+  aria-labelledby="titulo-semblanza-director"
+  class="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8"
+>
+  <div class="grid items-center gap-10 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-16">
+    <figure class="relative mx-auto w-full max-w-sm overflow-hidden rounded-2xl bg-azul-une shadow-xl">
+      <Image
+        src={retrato}
+        alt="Retrato del director del Campus Virtual UNE en Línea"
+        widths={[384, 768]}
+        sizes="(min-width: 28rem) 24rem, calc(100vw - 2rem)"
+        class="h-auto w-full"
+      />
+      <figcaption class="absolute inset-x-0 bottom-0 bg-linear-to-t from-black via-black/80 to-transparent px-5 pt-14 pb-5 text-center text-lg font-bold leading-tight text-white sm:text-xl">
+        {cargo}
+      </figcaption>
+    </figure>
+
+    <div class="text-gray-700 leading-relaxed">
+      <h2
+        id="titulo-semblanza-director"
+        class="text-3xl font-bold text-gray-900 md:text-4xl"
+      >
+        Conoce al director
+      </h2>
+      <div
+        class="mt-4 h-1 w-12 rounded-full bg-rojo-une"
+        aria-hidden="true"
+      ></div>
+
+      <p class="mt-8">
+        Profesional con orientación al desarrollo organizacional, la mejora
+        continua y el fortalecimiento de estructuras administrativas. Cuenta con
+        una Licenciatura en Administración, Maestría en Administración de
+        Negocios y Maestría en Finanzas, además de diversas certificaciones
+        profesionales que complementan su formación y respaldan una visión
+        integral de gestión y la toma de decisiones estratégicas.
+      </p>
+
+      <details class="group mt-6">
+        <summary class="inline-flex cursor-pointer list-none items-center gap-2 rounded font-bold text-azul-une hover:text-rojo-une focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-azul-une [&::-webkit-details-marker]:hidden">
+          <span class="group-open:hidden">Leer semblanza completa</span>
+          <span class="hidden group-open:inline">Ver menos</span>
+          <svg
+            class="h-4 w-4 group-open:rotate-180"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="m6 9 6 6 6-6"></path>
+          </svg>
+        </summary>
+
+        <div class="mt-4 space-y-4">
+          <p>
+            Su trayectoria profesional comprende el sector educativo, financiero
+            y de consultoría, donde ha participado en el desarrollo e
+            implementación de soluciones orientadas a optimizar procesos,
+            fortalecer controles internos y mejorar el desempeño organizacional.
+            Su experiencia incluye la documentación y automatización de
+            procedimientos, el diseño de políticas internas, la capacitación de
+            equipos y la implementación de mecanismos de seguimiento y control
+            que contribuyen a una gestión más eficiente y estructurada.
+          </p>
+          <p>
+            Al frente del Campus Virtual UNE en Línea, impulsa una visión de
+            gestión basada en la planeación, el análisis y la orientación a
+            resultados, con especial énfasis en la mejora de los procesos
+            académicos y administrativos.
+          </p>
+          <p>
+            Su gestión se sustenta en la responsabilidad, la ética profesional y
+            el compromiso de contribuir al fortalecimiento institucional y al
+            desarrollo de una comunidad educativa eficiente, innovadora y
+            orientada a la excelencia.
+          </p>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
